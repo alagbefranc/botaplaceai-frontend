@@ -90,6 +90,13 @@
         justify-content:center;flex-shrink:0;transition:background .2s}\
       .sbtn:disabled{opacity:.35;cursor:default}\
       .sbtn svg{width:15px;height:15px;fill:#fff}\
+      .abtn{width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;\
+        justify-content:center;flex-shrink:0;background:none;color:#9CA3AF;transition:color .15s}\
+      .abtn:hover{color:#6B7280}\
+      .abtn svg{width:16px;height:16px;fill:currentColor}\
+      .attach-preview{display:flex;align-items:center;gap:6px;padding:4px 14px;font-size:11px;color:#6B7280;background:#F9FAFB;border-bottom:1px solid #E5E7EB}\
+      .attach-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\
+      .attach-rm{border:none;background:none;cursor:pointer;color:#9CA3AF;font-size:14px;padding:0 4px}\
       .cbtn{width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;\
         justify-content:center;flex-shrink:0;box-shadow:0 4px 12px '+c+'50}\
       .cbtn svg{width:16px;height:16px;fill:#fff}\
@@ -144,7 +151,9 @@
         <div class="msgs hidden" id="b-msgs"></div>\
       </div>\
       <div class="ftr">\
+        <div class="attach-preview hidden" id="b-attach-bar"><span class="attach-name" id="b-attach-name"></span><button class="attach-rm" id="b-attach-rm" title="Remove">&times;</button></div>\
         <div class="ibar">\
+          <button class="abtn" id="b-attach" title="Attach file"><svg viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 015 0v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6h-1.5v9.5a2.5 2.5 0 005 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6H16.5z"/></svg></button>\
           <input type="text" class="inp" id="b-inp" placeholder="Type your message..." />\
           <button class="sbtn" id="b-send" disabled style="background:#D1D5DB"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>\
           <button class="cbtn" id="b-call" style="background:'+accent+'"><svg viewBox="0 0 24 24"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.36 11.36 0 003.58.57 1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1 11.36 11.36 0 00.57 3.58 1 1 0 01-.25 1.02l-2.2 2.19z"/></svg></button>\
@@ -170,6 +179,18 @@
     var callBtn = shadow.getElementById('b-call');
     var closeBtn = shadow.getElementById('b-close');
     var resetBtn = shadow.getElementById('b-reset');
+    var attachBtn = shadow.getElementById('b-attach');
+    var attachBar = shadow.getElementById('b-attach-bar');
+    var attachName = shadow.getElementById('b-attach-name');
+    var attachRm = shadow.getElementById('b-attach-rm');
+    var pendingFile = null;
+
+    // Hidden file input
+    var fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*,.pdf,.doc,.docx,.txt,.csv';
+    fileInput.style.display = 'none';
+    shadow.appendChild(fileInput);
 
     // ── Config ──
     function applyConfig(cfg) {
@@ -183,6 +204,8 @@
       sendBtn.style.background = '#D1D5DB';
       callBtn.style.background = accent;
       if (cfg.position === 'bottom-left') { root.classList.remove('br'); root.classList.add('bl'); }
+      // Use backend WS URL if provided
+      if (cfg.ws_url) wsBase = cfg.ws_url;
     }
 
     // ── Messages ──
@@ -248,19 +271,33 @@
 
     function sendMessage() {
       var text = inputEl.value.trim();
-      if (!text) return;
+      if (!text && !pendingFile) return;
       inputEl.value = ''; updateSendBtn();
       if (currentStreamingMessage) { messages.push({ role: 'assistant', content: currentStreamingMessage.textContent }); currentStreamingMessage = null; }
-      addMsg(text, 'user');
+      var displayText = pendingFile ? (text ? '\uD83D\uDCCE ' + pendingFile.name + '\n' + text : '\uD83D\uDCCE ' + pendingFile.name) : text;
+      addMsg(displayText, 'user');
       addTyping();
-      if (ws && ws.readyState === WebSocket.OPEN) { ws.send(JSON.stringify({ type: 'message', text: text })); }
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        var payload = { type: 'message', text: text || '' };
+        if (pendingFile) { payload.image = { mimeType: pendingFile.mimeType, data: pendingFile.data, name: pendingFile.name }; }
+        ws.send(JSON.stringify(payload));
+      }
       else { rmTyping(); addMsg('Connection lost. Please try again.', 'agent'); }
+      clearAttachment();
     }
 
     function updateSendBtn() {
-      var hasText = inputEl.value.trim().length > 0;
-      sendBtn.disabled = !hasText;
-      sendBtn.style.background = hasText ? accent : '#D1D5DB';
+      var hasContent = inputEl.value.trim().length > 0 || !!pendingFile;
+      sendBtn.disabled = !hasContent;
+      sendBtn.style.background = hasContent ? accent : '#D1D5DB';
+    }
+
+    function clearAttachment() {
+      pendingFile = null;
+      attachBar.classList.add('hidden');
+      attachName.textContent = '';
+      fileInput.value = '';
+      updateSendBtn();
     }
 
     // ── Heartbeat ──
@@ -274,6 +311,24 @@
     });
     closeBtn.addEventListener('click', function() { win.classList.add('hidden'); fab.classList.remove('hidden'); widgetOpen = false; });
     resetBtn.addEventListener('click', reset);
+
+    // Attachment events
+    attachBtn.addEventListener('click', function() { fileInput.click(); });
+    fileInput.addEventListener('change', function() {
+      var file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        var dataUrl = ev.target.result;
+        var base64 = dataUrl.split(',')[1];
+        pendingFile = { mimeType: file.type, data: base64, name: file.name };
+        attachName.textContent = '\uD83D\uDCCE ' + file.name;
+        attachBar.classList.remove('hidden');
+        updateSendBtn();
+      };
+      reader.readAsDataURL(file);
+    });
+    attachRm.addEventListener('click', clearAttachment);
     inputEl.addEventListener('input', updateSendBtn);
     inputEl.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey && inputEl.value.trim()) { e.preventDefault(); sendMessage(); } });
     sendBtn.addEventListener('click', sendMessage);

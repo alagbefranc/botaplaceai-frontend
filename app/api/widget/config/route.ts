@@ -73,6 +73,8 @@ export async function GET(request: Request) {
       voice_show_transcript: widgetConfig?.voice_show_transcript || false,
       auto_open: widgetConfig?.auto_open || false,
       auto_open_delay: widgetConfig?.auto_open_delay || 3,
+      backend_url: process.env.NEXT_PUBLIC_BACKEND_URL || null,
+      ws_url: process.env.NEXT_PUBLIC_BACKEND_WS_URL || null,
     });
   } catch (error) {
     console.error("Widget config error:", error);
