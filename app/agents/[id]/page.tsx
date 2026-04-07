@@ -27,7 +27,7 @@ import {
   Typography,
 } from "antd";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import {
   DEFAULT_LIVE_API_CONFIG,
   DEFAULT_BEHAVIOR_CONFIG,
@@ -103,6 +103,14 @@ interface AgentGetResponse {
 const defaultGreetingMessage = "Hi! How can I help you today?";
 
 export default function AgentDetailsPage() {
+  return (
+    <Suspense>
+      <AgentDetailsPageInner />
+    </Suspense>
+  );
+}
+
+function AgentDetailsPageInner() {
   const { message } = AntdApp.useApp();
   const router = useRouter();
   const params = useParams<{ id: string }>();

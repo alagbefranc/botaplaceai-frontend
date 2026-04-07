@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
 
       const { data, error } = await convQuery;
       if (!error && data) {
-        conversations = data as typeof conversations;
+        conversations = data as unknown as typeof conversations;
       }
     } catch (e) {
       // Table might not exist

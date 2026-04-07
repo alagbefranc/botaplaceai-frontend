@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Form, Input, Typography, App as AntdApp } from "antd";
 import { GoogleOutlined, WindowsFilled } from "@ant-design/icons";
@@ -65,6 +65,14 @@ interface SignupFormValues {
 }
 
 export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupPageInner />
+    </Suspense>
+  );
+}
+
+function SignupPageInner() {
   const { message } = AntdApp.useApp();
   const router = useRouter();
   const searchParams = useSearchParams();

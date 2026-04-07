@@ -246,7 +246,7 @@ async function testContextCacheLogic() {
     cacheModule = await import("../lib/vertex-cache.js");
   } catch {
     try {
-      cacheModule = await import("../lib/vertex-cache.ts");
+      cacheModule = await import("../lib/vertex-cache");
     } catch (err: any) {
       skip("Context cache — short prompt skip", `Cannot import module: ${err.message}`);
       skip("Context cache — ensureAgentCache logic", `Cannot import module: ${err.message}`);

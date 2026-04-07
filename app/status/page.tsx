@@ -111,9 +111,11 @@ function StatusDot({ status }: { status: "operational" | "degraded" | "outage" |
 
 function mapHealthToStatus(health: ServiceStatus | undefined): "operational" | "degraded" | "outage" | "maintenance" {
   if (!health) return "operational";
-  if (health.status === "healthy") return "operational";
-  if (health.status === "degraded") return "degraded";
-  if (health.status === "down") return "outage";
+  const s = health.status as string;
+  if (s === "healthy" || s === "operational") return "operational";
+  if (s === "degraded") return "degraded";
+  if (s === "down" || s === "outage") return "outage";
+  if (s === "maintenance") return "maintenance";
   return "operational";
 }
 
