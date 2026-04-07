@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+
+# All node_modules everywhere
+**/node_modules
+
+# Build output
+.next
+tsconfig.tsbuildinfo
+
+# Backend (separate repo/deploy)
+server/
+
+# Other dirs not needed for frontend Docker build
+supabase/
+packages/
+scripts/
+docs/
+assets-sources/
+
+# IDE/tool dirs
+.windsurf/
+.claude/
+.cursor/
+.agent/
+.agents/
+.aidesigner/
+.qoder/
+.github/
+
+# Large binaries
+*.exe
+
+# Docs
+*.md
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Misc
+npm-debug.log
+.dockerignore
+Dockerfile.backend
+fly.toml
+.mcp.json
