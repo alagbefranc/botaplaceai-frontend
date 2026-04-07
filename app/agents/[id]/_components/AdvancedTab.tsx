@@ -86,11 +86,9 @@ export function AdvancedTab({ agent, updateLiveApi, updateProvider }: TabProps) 
                 style={{ width: "100%", marginTop: 6 }}
                 options={[
                   { value: "gemini-3.1-flash-live-preview", label: "Gemini 3.1 Flash Live (Recommended)" },
-                  { value: "gemini-2.5-flash-preview-native-audio-dialog", label: "Gemini 2.5 Flash Native Audio Dialog" },
-                  { value: "gemini-2.5-flash-exp-native-audio-thinking-dialog", label: "Gemini 2.5 Flash Thinking + Audio (Experimental)" },
                   {
                     value: "gemini-2.5-flash-native-audio-preview-12-2025",
-                    label: "Gemini 2.5 Flash Live (Legacy)",
+                    label: "Gemini 2.5 Flash Live (Affective Dialog + Proactive Audio)",
                   },
                 ]}
               />
