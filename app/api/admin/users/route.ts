@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-);
+function getSupabase() {
+  return createClient(
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+  );
+}
 
 // GET /api/admin/users - Get all users
 export async function GET(request: NextRequest) {
   try {
-    const { data: users, error } = await supabase
+    const { data: users, error } = await getSupabase()
       .from("users")
       .select("id, email, full_name, role, org_id, created_at, organizations(name)")
       .order("created_at", { ascending: false });

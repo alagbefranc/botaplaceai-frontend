@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-);
+function getDb() {
+  return createClient(
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+  );
+}
 
 // Ensure tables exist
 async function ensureTablesExist() {
   // Check if evals table exists by trying to select from it
-  const { error } = await supabase.from("evals").select("id").limit(1);
+  const { error } = await getDb().from("evals").select("id").limit(1);
   if (error?.code === "42P01") {
     // Table doesn't exist, create it
     // Note: In production, use proper migrations
@@ -23,7 +25,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const orgId = searchParams.get("orgId");
 
-    let query = supabase
+    let query = getDb()
       .from("evals")
       .select("*")
       .order("created_at", { ascending: false });
@@ -69,7 +71,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await getDb()
       .from("evals")
       .insert({
         org_id: orgId || null,

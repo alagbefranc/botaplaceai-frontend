@@ -1,36 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-);
+function getSupabase() {
+  return createClient(
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+  );
+}
 
 // GET /api/admin/stats - Get admin dashboard stats
 export async function GET(request: NextRequest) {
   try {
     // Get total users
-    const { count: totalUsers } = await supabase
+    const sb = getSupabase();
+
+    const { count: totalUsers } = await sb
       .from("users")
       .select("*", { count: "exact", head: true });
 
     // Get total organizations
-    const { count: totalOrgs } = await supabase
+    const { count: totalOrgs } = await sb
       .from("organizations")
       .select("*", { count: "exact", head: true });
 
     // Get total agents
-    const { count: totalAgents } = await supabase
+    const { count: totalAgents } = await sb
       .from("agents")
       .select("*", { count: "exact", head: true });
 
     // Get total conversations
-    const { count: totalConversations } = await supabase
+    const { count: totalConversations } = await sb
       .from("conversations")
       .select("*", { count: "exact", head: true });
 
     // Get active conversations
-    const { count: activeConversations } = await supabase
+    const { count: activeConversations } = await sb
       .from("conversations")
       .select("*", { count: "exact", head: true })
       .eq("status", "active");
@@ -38,7 +42,7 @@ export async function GET(request: NextRequest) {
     // Get conversations today
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
-    const { count: conversationsToday } = await supabase
+    const { count: conversationsToday } = await sb
       .from("conversations")
       .select("*", { count: "exact", head: true })
       .gte("created_at", todayStart.toISOString());

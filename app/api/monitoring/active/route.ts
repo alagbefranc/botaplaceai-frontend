@@ -1,17 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-);
+let _sb: ReturnType<typeof createClient> | null = null;
+function getDb() {
+  if (!_sb) _sb = createClient(
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+  );
+  return _sb;
+}
 
 // GET /api/monitoring/active - Get active sessions
 export async function GET(request: NextRequest) {
   try {
     // Get active conversations (not ended)
     // Use explicit relationship hint to avoid ambiguity between agent_id and current_agent_id
-    const { data: activeConversations, error: convError } = await supabase
+    const { data: activeConversations, error: convError } = await getDb()
       .from("conversations")
       .select("id, agent_id, channel, status, created_at, metadata, agents!conversations_agent_id_fkey(name)")
       .eq("status", "active")
@@ -24,13 +28,13 @@ export async function GET(request: NextRequest) {
 
     // Get recent conversations (last hour) for metrics
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const { data: recentConversations, error: recentError } = await supabase
+    const { data: recentConversations, error: recentError } = await getDb()
       .from("conversations")
       .select("id, created_at, ended_at, channel")
       .gte("created_at", oneHourAgo);
 
     // Calculate metrics
-    const activeSessions = (activeConversations || []).map((conv) => {
+    const activeSessions = ((activeConversations || []) as any[]).map((conv: any) => {
       const startedAt = new Date(conv.created_at);
       const durationSeconds = Math.round((Date.now() - startedAt.getTime()) / 1000);
       
@@ -52,7 +56,7 @@ export async function GET(request: NextRequest) {
 
     // Channel distribution
     const channelCounts: Record<string, number> = {};
-    (recentConversations || []).forEach((c) => {
+    ((recentConversations || []) as any[]).forEach((c: any) => {
       channelCounts[c.channel] = (channelCounts[c.channel] || 0) + 1;
     });
 

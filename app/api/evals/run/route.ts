@@ -3,10 +3,12 @@ import { createClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-);
+function getDb() {
+  return createClient(
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+  );
+}
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 
@@ -157,7 +159,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch the eval definition
-    const { data: evalDef, error: evalError } = await supabase
+    const { data: evalDef, error: evalError } = await getDb()
       .from("evals")
       .select("*")
       .eq("id", evalId)
@@ -168,7 +170,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create eval run record
-    const { data: evalRun, error: runError } = await supabase
+    const { data: evalRun, error: runError } = await getDb()
       .from("eval_runs")
       .insert({
         eval_id: evalId,
@@ -310,7 +312,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update eval run with results
-    const { data: updatedRun, error: updateError } = await supabase
+    const { data: updatedRun, error: updateError } = await getDb()
       .from("eval_runs")
       .update({
         status: "ended",
@@ -340,7 +342,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const evalId = searchParams.get("evalId");
 
-    let query = supabase
+    let query = getDb()
       .from("eval_runs")
       .select("*")
       .order("created_at", { ascending: false });

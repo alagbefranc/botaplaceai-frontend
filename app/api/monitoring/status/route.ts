@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-);
+let _sb: ReturnType<typeof createClient> | null = null;
+function getDb() {
+  if (!_sb) _sb = createClient(
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+  );
+  return _sb;
+}
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 
@@ -39,7 +43,7 @@ async function checkBackendHealth(): Promise<HealthStatus> {
 async function checkSupabaseHealth(): Promise<HealthStatus> {
   const start = Date.now();
   try {
-    const { error } = await supabase.from("agents").select("id").limit(1);
+    const { error } = await getDb().from("agents").select("id").limit(1);
     const latencyMs = Date.now() - start;
     
     if (!error) {

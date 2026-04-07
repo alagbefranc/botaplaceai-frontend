@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-);
+let _sb: ReturnType<typeof createClient> | null = null;
+function supabase() {
+  if (!_sb) _sb = createClient(
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+  );
+  return _sb;
+}
 
 // GET /api/logs - Get aggregated conversation logs with events
 export async function GET(request: NextRequest) {
@@ -27,8 +31,7 @@ export async function GET(request: NextRequest) {
     }> = [];
 
     try {
-      let query = supabase
-        .from("conversation_events")
+      let query = supabase().from("conversation_events")
         .select("*")
         .order("timestamp", { ascending: false })
         .limit(limit);
@@ -67,8 +70,7 @@ export async function GET(request: NextRequest) {
     }> = [];
 
     try {
-      let convQuery = supabase
-        .from("conversations")
+      let convQuery = supabase().from("conversations")
         .select("id, agent_id, channel, status, created_at, ended_at, metadata, agents(name)")
         .order("created_at", { ascending: false })
         .limit(50);
@@ -101,8 +103,7 @@ export async function GET(request: NextRequest) {
 
     if (conversationIds.length > 0) {
       try {
-        const { data, error } = await supabase
-          .from("messages")
+        const { data, error } = await supabase().from("messages")
           .select("id, conversation_id, role, content, created_at, metadata")
           .in("conversation_id", conversationIds)
           .order("created_at", { ascending: true });
