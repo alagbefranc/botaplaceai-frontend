@@ -486,7 +486,7 @@ export interface BehaviorConfig {
 
 // Speech Configuration
 export type DenoisingLevel = "low" | "medium" | "high";
-export type TranscriberModel = "gemini" | "whisper"; // Gemini default, space for others
+export type TranscriberModel = "gemini" | "whisper" | "deepgram";
 
 export interface DenoisingConfig {
   enabled: boolean;
@@ -509,6 +509,11 @@ export interface TranscriberConfig {
   model: TranscriberModel;
   language?: string;
   fallbackEnabled: boolean;
+  // Deepgram-specific
+  deepgramModel?: string;          // e.g. 'nova-3', 'nova-2'
+  keywords?: string[];             // single-word boosting with optional intensifier e.g. 'snuffleupagus:5'
+  keyterms?: string[];             // multi-word phrase boosting e.g. 'order number'
+  smartFormat?: boolean;           // Deepgram smart formatting
 }
 
 export type CallMode = 'inbound' | 'outbound' | 'both';

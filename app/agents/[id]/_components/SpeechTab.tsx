@@ -397,6 +397,7 @@ export function SpeechTab({ agent, updateSpeech }: TabProps) {
                 style={{ width: "100%", marginTop: 6 }}
                 options={[
                   { value: "gemini", label: "Gemini (Default)" },
+                  { value: "deepgram", label: "Deepgram" },
                   { value: "whisper", label: "Whisper (Coming Soon)", disabled: true },
                 ]}
               />
@@ -418,6 +419,82 @@ export function SpeechTab({ agent, updateSpeech }: TabProps) {
             </Col>
           </Row>
 
+          {speech.transcriber.model === "deepgram" && (
+            <>
+              <Row gutter={12}>
+                <Col span={8}>
+                  <FieldLabel label="Deepgram Model" help="Deepgram STT model. Nova-3 is latest with keyterm support." />
+                  <Select
+                    value={speech.transcriber.deepgramModel || "nova-3"}
+                    onChange={(deepgramModel) =>
+                      updateSpeech({
+                        transcriber: { ...speech.transcriber, deepgramModel },
+                      })
+                    }
+                    style={{ width: "100%", marginTop: 6 }}
+                    options={[
+                      { value: "nova-3", label: "Nova-3 (Latest)" },
+                      { value: "nova-2", label: "Nova-2" },
+                      { value: "enhanced", label: "Enhanced" },
+                      { value: "base", label: "Base" },
+                    ]}
+                  />
+                </Col>
+                <Col span={8}>
+                  <FieldLabel label="Smart Format" help="Automatically format numbers, dates, and punctuation." />
+                  <div style={{ marginTop: 6 }}>
+                    <Switch
+                      checked={speech.transcriber.smartFormat ?? true}
+                      onChange={(smartFormat) =>
+                        updateSpeech({
+                          transcriber: { ...speech.transcriber, smartFormat },
+                        })
+                      }
+                    />
+                  </div>
+                </Col>
+              </Row>
+              <div>
+                <FieldLabel label="Keywords" help="Single-word boosting with optional intensifier (e.g. 'snuffleupagus:5'). Use for uncommon proper nouns." />
+                <Select
+                  mode="tags"
+                  value={speech.transcriber.keywords || []}
+                  onChange={(keywords) =>
+                    updateSpeech({
+                      transcriber: { ...speech.transcriber, keywords },
+                    })
+                  }
+                  style={{ width: "100%", marginTop: 6 }}
+                  placeholder="Type a keyword and press Enter (e.g. systrom, krieger:3)"
+                  tokenSeparators={[',']}
+                  open={false}
+                />
+              </div>
+              <div>
+                <FieldLabel label="Keyterms (Phrases)" help="Multi-word phrase boosting (Nova-3+). Use for domain phrases like 'order number' or 'account ID'." />
+                <Select
+                  mode="tags"
+                  value={speech.transcriber.keyterms || []}
+                  onChange={(keyterms) =>
+                    updateSpeech({
+                      transcriber: { ...speech.transcriber, keyterms },
+                    })
+                  }
+                  style={{ width: "100%", marginTop: 6 }}
+                  placeholder="Type a phrase and press Enter (e.g. order number, PCI compliance)"
+                  tokenSeparators={[',']}
+                  open={false}
+                />
+              </div>
+              <Alert
+                type="info"
+                showIcon
+                message="Deepgram runs as a parallel transcriber alongside Gemini. Audio is forked to both — Gemini handles the conversation, Deepgram provides keyword-boosted transcripts."
+                style={{ marginTop: 4 }}
+              />
+            </>
+          )}
+
           <Row align="middle">
             <Col span={6}>
               <FieldLabel label="Enable fallback" help="Fall back to alternate transcriber on failure." />
@@ -433,12 +510,14 @@ export function SpeechTab({ agent, updateSpeech }: TabProps) {
               />
             </Col>
           </Row>
-          <Alert
-            type="info"
-            showIcon
-            message="Transcriber model selection and language hint are used by the Gemini Live voice pipeline. The Whisper option will be available in a future update."
-            style={{ marginTop: 12 }}
-          />
+          {speech.transcriber.model !== "deepgram" && (
+            <Alert
+              type="info"
+              showIcon
+              message="Transcriber model selection and language hint are used by the Gemini Live voice pipeline. The Whisper option will be available in a future update."
+              style={{ marginTop: 12 }}
+            />
+          )}
         </Space>
       </Card>
     </Space>
