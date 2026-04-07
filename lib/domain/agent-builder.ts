@@ -523,6 +523,14 @@ export interface CallGreetings {
   outbound: string;
 }
 
+export type AmbientPreset = 'office_busy' | 'office_calm' | 'none';
+
+export interface BackgroundNoiseConfig {
+  enabled: boolean;
+  preset: AmbientPreset;
+  volume: number; // 0.0 – 1.0 (default 0.08 = subtle)
+}
+
 export interface SpeechConfig {
   callMode: CallMode;
   greetings: CallGreetings;
@@ -530,6 +538,7 @@ export interface SpeechConfig {
   pronunciation: PronunciationEntry[];
   voiceFallback: VoiceFallbackConfig;
   transcriber: TranscriberConfig;
+  backgroundNoise: BackgroundNoiseConfig;
 }
 
 // Tools Configuration
@@ -1173,6 +1182,12 @@ export const DEFAULT_TRANSCRIBER_CONFIG: TranscriberConfig = {
   fallbackEnabled: true,
 };
 
+export const DEFAULT_BACKGROUND_NOISE_CONFIG: BackgroundNoiseConfig = {
+  enabled: false,
+  preset: 'none',
+  volume: 0.08,
+};
+
 export const DEFAULT_SPEECH_CONFIG: SpeechConfig = {
   callMode: 'both',
   greetings: {
@@ -1183,6 +1198,7 @@ export const DEFAULT_SPEECH_CONFIG: SpeechConfig = {
   pronunciation: [],
   voiceFallback: DEFAULT_VOICE_FALLBACK_CONFIG,
   transcriber: DEFAULT_TRANSCRIBER_CONFIG,
+  backgroundNoise: DEFAULT_BACKGROUND_NOISE_CONFIG,
 };
 
 export const DEFAULT_VOICEMAIL_CONFIG: VoicemailConfig = {

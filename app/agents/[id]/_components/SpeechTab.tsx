@@ -32,6 +32,7 @@ import {
   type PronunciationEntry,
   type DenoisingLevel,
   type TranscriberModel,
+  type AmbientPreset,
 } from "@/lib/domain/agent-builder";
 import type { TabProps } from "./types";
 
@@ -517,6 +518,94 @@ export function SpeechTab({ agent, updateSpeech }: TabProps) {
               message="Transcriber model selection and language hint are used by the Gemini Live voice pipeline. The Whisper option will be available in a future update."
               style={{ marginTop: 12 }}
             />
+          )}
+        </Space>
+      </Card>
+
+      {/* Background Noise Configuration */}
+      <Card
+        title={
+          <Space>
+            <span>Background Noise</span>
+            <Tooltip title="Add ambient office sounds to the agent's voice to make it sound like they're in a real office environment.">
+              <InfoCircleOutlined style={{ color: "rgba(0, 0, 0, 0.45)" }} />
+            </Tooltip>
+          </Space>
+        }
+      >
+        <Typography.Paragraph type="secondary" style={{ marginBottom: 16 }}>
+          Mix subtle background ambience into the agent&apos;s voice output for a more realistic call experience.
+        </Typography.Paragraph>
+
+        <Space direction="vertical" size={14} style={{ width: "100%" }}>
+          <Row align="middle">
+            <Col span={6}>
+              <FieldLabel label="Enable Background Noise" help="When enabled, ambient audio will be mixed into the agent's voice during calls." />
+            </Col>
+            <Col span={18}>
+              <Switch
+                checked={speech.backgroundNoise?.enabled ?? false}
+                onChange={(enabled) =>
+                  updateSpeech({
+                    backgroundNoise: {
+                      ...speech.backgroundNoise,
+                      enabled,
+                      preset: enabled && (!speech.backgroundNoise?.preset || speech.backgroundNoise.preset === 'none')
+                        ? 'office_calm'
+                        : speech.backgroundNoise?.preset ?? 'none',
+                    },
+                  })
+                }
+              />
+            </Col>
+          </Row>
+
+          {speech.backgroundNoise?.enabled && (
+            <>
+              <Row gutter={12}>
+                <Col span={8}>
+                  <FieldLabel label="Ambient Preset" help="Choose the type of background ambience." />
+                  <Select
+                    value={speech.backgroundNoise?.preset || "office_calm"}
+                    onChange={(preset) =>
+                      updateSpeech({
+                        backgroundNoise: { ...speech.backgroundNoise, preset: preset as AmbientPreset },
+                      })
+                    }
+                    style={{ width: "100%", marginTop: 6 }}
+                    options={[
+                      { value: "office_calm", label: "Office - Calm (AC hum, distant phones)" },
+                      { value: "office_busy", label: "Office - Busy (chatter, activity)" },
+                    ]}
+                  />
+                </Col>
+                <Col span={8}>
+                  <FieldLabel label="Volume" help="How loud the background noise is (0.01 = barely audible, 0.15 = noticeable). Default: 0.08" />
+                  <Input
+                    type="number"
+                    min={0.01}
+                    max={0.3}
+                    step={0.01}
+                    value={speech.backgroundNoise?.volume ?? 0.08}
+                    onChange={(e) =>
+                      updateSpeech({
+                        backgroundNoise: {
+                          ...speech.backgroundNoise,
+                          volume: parseFloat(e.target.value) || 0.08,
+                        },
+                      })
+                    }
+                    style={{ width: "100%", marginTop: 6 }}
+                  />
+                </Col>
+              </Row>
+              <Alert
+                type="info"
+                showIcon
+                message="Background noise is mixed server-side into the agent's voice output. It applies to both browser voice chat and phone calls."
+                style={{ marginTop: 4 }}
+              />
+            </>
           )}
         </Space>
       </Card>
