@@ -267,9 +267,24 @@ export default function WidgetPage() {
 
   useEffect(() => {
     const loadAgents = async () => {
-      if (!supabase) return;
+      if (!supabase) { setLoading(false); return; }
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setLoading(false); return; }
+      if (!session) {
+        // Try loading agents for the org stored in localStorage
+        const orgId = typeof window !== "undefined" ? window.localStorage.getItem("orgId") : null;
+        if (orgId) {
+          const { data, error } = await supabase.from("agents")
+            .select("id, name, greeting_message, status")
+            .eq("status", "active").eq("org_id", orgId).order("created_at", { ascending: false });
+          if (!error && data && data.length > 0) {
+            setAgents(data);
+            setSelectedAgentId(data[0].id);
+            if (data[0].greeting_message) setGreeting(data[0].greeting_message);
+          }
+        }
+        setLoading(false);
+        return;
+      }
       const { data, error } = await supabase.from("agents")
         .select("id, name, greeting_message, status")
         .eq("status", "active").order("created_at", { ascending: false });
@@ -685,10 +700,9 @@ export function BotaWidget({ agentId, apiBase = window.location.origin }) {
               background: bg,
               display: "flex", flexDirection: "column",
               overflow: "hidden",
-              animation: "vapiWidgetIn 0.2s ease",
             }}>
               {/* Mobile header: back chevron + avatar + title */}
-              <div style={{ padding: "10px 14px", borderBottom: `1px solid ${border}`, display: "flex", alignItems: "center", gap: 10, background: bg, flexShrink: 0 }}>
+              <div style={{ paddingTop: 44, padding: "44px 14px 10px", borderBottom: `1px solid ${border}`, display: "flex", alignItems: "center", gap: 10, background: bg, flexShrink: 0 }}>
                 <Button type="text" size="small"
                   icon={<CloseOutlined style={{ fontSize: 16, color: textSecondary }} />}
                   style={{ width: 32, height: 32, flexShrink: 0 }}
@@ -715,14 +729,14 @@ export function BotaWidget({ agentId, apiBase = window.location.origin }) {
                 justifyContent: chatMessages.length === 0 ? "center" : "flex-start", gap: 10 }}>
                 {renderConversationBody()}
               </div>
-              {/* Controls — extra bottom padding clears the iPhone's 47px border-radius curve */}
-              <div style={{ borderTop: `1px solid ${border}`, background: theme === "dark" ? "#0F172A" : "#F9FAFB", flexShrink: 0, paddingBottom: 40 }}>
+              {/* Controls — extra bottom padding clears the iPhone's home indicator */}
+              <div style={{ borderTop: `1px solid ${border}`, background: theme === "dark" ? "#0F172A" : "#F9FAFB", flexShrink: 0 }}>
                 <div style={{ padding: "10px 12px 6px" }}>
                   {mode === "voice" && renderVoiceControls()}
                   {mode === "chat" && renderChatControls()}
                   {mode === "hybrid" && renderHybridControls()}
                 </div>
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "2px 14px 0", gap: 5 }}>
+                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "2px 14px 8px", gap: 5 }}>
                   <span style={{ fontSize: 10, color: textSecondary, opacity: 0.6, letterSpacing: 0.2 }}>Powered by</span>
                   <img src="/assets/badges/bota-badge.png" alt="Bota"
                     style={{ height: 12, opacity: 0.5, filter: theme === "dark" ? "invert(1)" : "none" }} />
