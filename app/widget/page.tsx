@@ -296,9 +296,12 @@ export default function WidgetPage() {
     loadAgents();
   }, [supabase]);
 
-  // Load saved widget config when agent changes
+  // Load saved widget config when agent changes — greeting always comes from agent first
   useEffect(() => {
     if (!selectedAgentId || !supabase) return;
+    const agent = agents.find(a => a.id === selectedAgentId);
+    const agentGreeting = agent?.greeting_message ? resolveVars(agent.greeting_message) : "Hi there! How can I help you today?";
+
     const loadConfig = async () => {
       const { data } = await supabase
         .from("widget_configs")
@@ -314,19 +317,24 @@ export default function WidgetPage() {
         setAccentColor(data.accent_color || "#7C3AED");
         setCtaButtonColor(data.cta_button_color || "#1F2937");
         setCtaButtonTextColor(data.cta_button_text_color || "#FFFFFF");
-        setWidgetTitle(data.widget_title || "Talk with AI");
+        setWidgetTitle(data.widget_title || agent?.name || "Talk with AI");
         setCtaTitle(data.cta_title || "Need help?");
         setCtaSubtitle(data.cta_subtitle || "Chat with our AI assistant");
-        if (data.greeting) setGreeting(resolveVars(data.greeting));
+        // Use saved greeting if it exists, otherwise fall back to agent's greeting_message
+        setGreeting(data.greeting ? resolveVars(data.greeting) : agentGreeting);
         setChatPlaceholder(data.chat_placeholder || "Type your message...");
         if (data.avatar_url) setAgentAvatarUrl(data.avatar_url);
         setVoiceShowTranscript(data.voice_show_transcript || false);
         setAutoOpen(data.auto_open || false);
         setAutoOpenDelay(data.auto_open_delay || 3);
+      } else {
+        // No saved config — use agent defaults
+        setGreeting(agentGreeting);
+        setWidgetTitle(agent?.name || "Talk with AI");
       }
     };
     loadConfig();
-  }, [selectedAgentId, supabase]);
+  }, [selectedAgentId, supabase, agents]);
 
   useEffect(() => {
     if (mode === "voice") setActiveTab("voice");
@@ -1033,7 +1041,11 @@ export function BotaWidget({ agentId, apiBase = window.location.origin }) {
                         <Form.Item label="CTA Subtitle" style={{ marginBottom: 10 }}>
                           <Input value={ctaSubtitle} onChange={e => setCtaSubtitle(e.target.value)} placeholder="Optional subtitle" />
                         </Form.Item>
-                        <Form.Item label="Greeting / Empty State" style={{ marginBottom: 10 }}>
+                        <Form.Item
+                          label={<span>Greeting Message <Typography.Text type="secondary" style={{ fontSize: 11, fontWeight: 400 }}>(from Agent config)</Typography.Text></span>}
+                          style={{ marginBottom: 10 }}
+                          help={selectedAgent?.greeting_message ? undefined : "Set in Agents page → Edit Agent → Greeting Message"}
+                        >
                           <Input.TextArea value={greeting} onChange={e => setGreeting(e.target.value)} rows={3} />
                         </Form.Item>
                         <Form.Item label="Chat Input Placeholder" style={{ marginBottom: 0 }}>
