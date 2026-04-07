@@ -10,7 +10,7 @@ import {
   type VoicePersonalityConfig,
   type CustomFunction,
   type VoiceEmotion,
-  type BackgroundNoiseType,
+  type AmbientPreset,
 } from "@/lib/domain/agent-builder";
 
 export interface KnowledgeFileDraft {
@@ -98,8 +98,9 @@ export const defaultAgentBuilderDraft: AgentBuilderDraft = {
     pauseStyle: "natural",
   },
   backgroundNoise: {
-    type: "none",
-    volume: 20,
+    enabled: false,
+    preset: "none",
+    volume: 0.08,
   },
   // Advanced settings defaults
   maxTokens: 1024,

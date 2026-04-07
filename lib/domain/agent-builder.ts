@@ -169,22 +169,8 @@ export const MODEL_METADATA: Record<string, { label: string; description: string
   },
 };
 
-// Background noise options for voice ambiance
+// Background noise options for voice ambiance (legacy types kept for reference)
 export type BackgroundNoiseType = "none" | "office" | "cafe" | "typing" | "call_center" | "nature";
-
-export interface BackgroundNoiseConfig {
-  type: BackgroundNoiseType;
-  volume: number; // 0-100
-}
-
-export const BACKGROUND_NOISE_OPTIONS: Array<{ key: BackgroundNoiseType; label: string; description: string }> = [
-  { key: "none", label: "No background noise", description: "Clean audio without ambient sounds" },
-  { key: "office", label: "Office ambiance", description: "Subtle office environment sounds" },
-  { key: "cafe", label: "Coffee shop", description: "Gentle cafe background chatter" },
-  { key: "typing", label: "Keyboard typing", description: "Occasional keyboard clicks for authenticity" },
-  { key: "call_center", label: "Call center", description: "Professional call center ambiance" },
-  { key: "nature", label: "Nature sounds", description: "Calm nature ambiance for relaxed tone" },
-];
 
 // Voice emotion/personality settings
 export type VoiceEmotion = "neutral" | "friendly" | "professional" | "empathetic" | "enthusiastic" | "calm" | "authoritative";
