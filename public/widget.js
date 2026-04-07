@@ -42,9 +42,12 @@
     styles.textContent = `
       * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
 
-      .widget-root { position: fixed; bottom: 1.5rem; z-index: 999999; }
+      .widget-root {
+        position: fixed; bottom: 1.5rem; z-index: 999999;
+        display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 12px;
+      }
       .widget-root.bottom-right { right: 1.5rem; }
-      .widget-root.bottom-left  { left: 1.5rem; }
+      .widget-root.bottom-left  { left: 1.5rem; align-items: flex-start; }
 
       .widget-button {
         width: 3.5rem; height: 3.5rem; border-radius: 50%; border: none; cursor: pointer;
@@ -56,10 +59,13 @@
       .widget-button svg { width: 1.5rem; height: 1.5rem; fill: white; }
 
       .widget-window {
-        width: 28rem; height: 40rem; background: white; border-radius: 1rem;
+        width: 28rem; max-height: min(40rem, calc(100vh - 8rem)); background: white; border-radius: 1rem;
         box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
         overflow: hidden; display: flex; flex-direction: column;
         animation: botaIn 0.25s cubic-bezier(0,1.2,1,1);
+      }
+      .widget-messages-wrap {
+        flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden;
       }
 
       @keyframes botaIn {
@@ -156,7 +162,7 @@
       <button class="widget-button" id="bota-toggle" title="Chat with us">
         <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
       </button>
-      <div class="hidden" id="bota-window">
+      <div class="widget-window hidden" id="bota-window">
         <div class="widget-header">
           <div class="widget-avatar-placeholder" id="bota-avatar-wrap">
             <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"/></svg>
@@ -178,7 +184,7 @@
           </div>
         </div>
 
-        <div id="bota-messages-wrap">
+        <div class="widget-messages-wrap" id="bota-messages-wrap">
           <div class="widget-empty" id="bota-empty">
             <div class="widget-empty-avatar-placeholder" id="bota-empty-avatar-wrap">
               <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"/></svg>
