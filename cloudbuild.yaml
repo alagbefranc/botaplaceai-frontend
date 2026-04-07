@@ -1,0 +1,48 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/botaplace-frontend:$COMMIT_SHA'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_SUPABASE_URL=${_NEXT_PUBLIC_SUPABASE_URL}'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_SUPABASE_ANON_KEY=${_NEXT_PUBLIC_SUPABASE_ANON_KEY}'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_BACKEND_URL=${_NEXT_PUBLIC_BACKEND_URL}'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_BACKEND_WS_URL=${_NEXT_PUBLIC_BACKEND_WS_URL}'
+      - '.'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/botaplace-frontend:$COMMIT_SHA'
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'botaplace-frontend'
+      - '--image'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/botaplace-frontend:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--allow-unauthenticated'
+      - '--port'
+      - '3000'
+      - '--memory'
+      - '1Gi'
+
+substitutions:
+  _NEXT_PUBLIC_SUPABASE_URL: 'https://ozmptzfpcmcnvppaywnq.supabase.co'
+  _NEXT_PUBLIC_SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96bXB0emZwY21jbnZwcGF5d25xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4Mjc3MDQsImV4cCI6MjA5MDQwMzcwNH0.CpMn_nMsNR6bfFq3btCU4Nd3dkEd07y-_VQbFY2OYKE'
+  _NEXT_PUBLIC_BACKEND_URL: 'https://botaplace-backend-598506627688.us-central1.run.app'
+  _NEXT_PUBLIC_BACKEND_WS_URL: 'wss://botaplace-backend-598506627688.us-central1.run.app'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/botaplace-frontend:$COMMIT_SHA'
