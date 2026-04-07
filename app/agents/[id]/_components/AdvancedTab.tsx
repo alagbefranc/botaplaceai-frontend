@@ -48,13 +48,7 @@ export function AdvancedTab({ agent, updateLiveApi, updateProvider }: TabProps) 
   return (
     <Space direction="vertical" size={16} style={{ width: "100%" }}>
       {/* Runtime warnings */}
-      {isGemini31 && (liveApi.proactiveAudio || liveApi.enableAffectiveDialog) && (
-        <Alert
-          type="warning"
-          showIcon
-          message="Proactive audio and affective dialog are not supported on Gemini 3.1 Flash Live. Switch to Gemini 2.5 Flash Live (legacy) to use these features."
-        />
-      )}
+      {/* Removed: affective dialog and proactive audio now work on all models */}
       {!provider.enablePartnerModels && isPartnerChatModel && (
         <Alert
           type="info"
@@ -92,6 +86,8 @@ export function AdvancedTab({ agent, updateLiveApi, updateProvider }: TabProps) 
                 style={{ width: "100%", marginTop: 6 }}
                 options={[
                   { value: "gemini-3.1-flash-live-preview", label: "Gemini 3.1 Flash Live (Recommended)" },
+                  { value: "gemini-2.5-flash-preview-native-audio-dialog", label: "Gemini 2.5 Flash Native Audio Dialog" },
+                  { value: "gemini-2.5-flash-exp-native-audio-thinking-dialog", label: "Gemini 2.5 Flash Thinking + Audio (Experimental)" },
                   {
                     value: "gemini-2.5-flash-native-audio-preview-12-2025",
                     label: "Gemini 2.5 Flash Live (Legacy)",
