@@ -216,6 +216,9 @@ export default function WidgetPage() {
   const [autoOpen, setAutoOpen] = useState(false);
   const [autoOpenDelay, setAutoOpenDelay] = useState(3);
 
+  // Save state
+  const [saving, setSaving] = useState(false);
+
   // Preview state
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
   const [widgetOpen, setWidgetOpen] = useState(true);
@@ -283,12 +286,72 @@ export default function WidgetPage() {
     loadAgents();
   }, [supabase]);
 
+  // Load saved widget config when agent changes
+  useEffect(() => {
+    if (!selectedAgentId || !supabase) return;
+    const loadConfig = async () => {
+      const { data } = await supabase
+        .from("widget_configs")
+        .select("*")
+        .eq("agent_id", selectedAgentId)
+        .single();
+      if (data) {
+        setMode(data.mode || "hybrid");
+        setTheme(data.theme || "light");
+        setWidgetSize(data.widget_size || "full");
+        setBorderRadius(data.border_radius || "medium");
+        setPosition(data.position || "bottom-right");
+        setAccentColor(data.accent_color || "#7C3AED");
+        setCtaButtonColor(data.cta_button_color || "#1F2937");
+        setCtaButtonTextColor(data.cta_button_text_color || "#FFFFFF");
+        setWidgetTitle(data.widget_title || "Talk with AI");
+        setCtaTitle(data.cta_title || "Need help?");
+        setCtaSubtitle(data.cta_subtitle || "Chat with our AI assistant");
+        if (data.greeting) setGreeting(data.greeting);
+        setChatPlaceholder(data.chat_placeholder || "Type your message...");
+        if (data.avatar_url) setAgentAvatarUrl(data.avatar_url);
+        setVoiceShowTranscript(data.voice_show_transcript || false);
+        setAutoOpen(data.auto_open || false);
+        setAutoOpenDelay(data.auto_open_delay || 3);
+      }
+    };
+    loadConfig();
+  }, [selectedAgentId, supabase]);
+
   useEffect(() => {
     if (mode === "voice") setActiveTab("voice");
     else setActiveTab("chat");
   }, [mode]);
 
   const selectedAgent = useMemo(() => agents.find(a => a.id === selectedAgentId), [agents, selectedAgentId]);
+
+  const handleSave = useCallback(async () => {
+    if (!selectedAgentId) { message.warning("Select an agent first"); return; }
+    setSaving(true);
+    try {
+      const res = await fetch("/api/widget/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          agent_id: selectedAgentId,
+          mode, theme, widget_size: widgetSize, border_radius: borderRadius,
+          position, accent_color: accentColor, cta_button_color: ctaButtonColor,
+          cta_button_text_color: ctaButtonTextColor, widget_title: widgetTitle,
+          cta_title: ctaTitle, cta_subtitle: ctaSubtitle, greeting,
+          chat_placeholder: chatPlaceholder, avatar_url: agentAvatarUrl === DEFAULT_AVATAR ? null : agentAvatarUrl,
+          voice_show_transcript: voiceShowTranscript, auto_open: autoOpen,
+          auto_open_delay: autoOpenDelay,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Save failed");
+      message.success("Widget settings saved!");
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
+  }, [selectedAgentId, mode, theme, widgetSize, borderRadius, position, accentColor, ctaButtonColor, ctaButtonTextColor, widgetTitle, ctaTitle, ctaSubtitle, greeting, chatPlaceholder, agentAvatarUrl, voiceShowTranscript, autoOpen, autoOpenDelay]);
 
   const handleSendMessage = useCallback(async (text: string) => {
     if ((!text.trim() && !pendingImage) || !selectedAgentId) return;
@@ -1122,7 +1185,7 @@ export function BotaWidget({ agentId, apiBase = window.location.origin }) {
             />
           </Card>
 
-          <Button type="primary" block icon={<CheckCircleOutlined />} style={{ marginTop: 12 }}>Save Widget Settings</Button>
+          <Button type="primary" block icon={<CheckCircleOutlined />} style={{ marginTop: 12 }} onClick={handleSave} loading={saving} disabled={!selectedAgentId}>Save Widget Settings</Button>
         </Col>
 
         {/* ── Right: Preview ─────────────────────────────────────────── */}
