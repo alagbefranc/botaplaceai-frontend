@@ -48,7 +48,10 @@ import {
   type EscalationKeyword,
   type HoldMusicConfig,
   type AnalysisPlan,
+  type BackgroundNoiseConfig,
+  type AmbientPreset,
   DEFAULT_ANALYSIS_PLAN,
+  DEFAULT_BACKGROUND_NOISE_CONFIG,
 } from "@/lib/domain/agent-builder";
 import { ApiRouteError, getOrgMemberContext } from "@/lib/server/org-member";
 
@@ -456,6 +459,15 @@ function normalizeCallGreetings(input: unknown): { inbound: string; outbound: st
   };
 }
 
+function normalizeBackgroundNoiseConfig(input: unknown): BackgroundNoiseConfig {
+  if (!isRecord(input)) return DEFAULT_BACKGROUND_NOISE_CONFIG;
+  return {
+    enabled: typeof input.enabled === "boolean" ? input.enabled : false,
+    preset: pickEnumValue(input.preset, ["office_busy", "office_calm", "none"], "none") as AmbientPreset,
+    volume: typeof input.volume === "number" ? Math.max(0, Math.min(1, input.volume)) : 0.08,
+  };
+}
+
 function normalizeSpeechConfig(input: unknown): SpeechConfig {
   const source = isRecord(input) ? input : {};
   return {
@@ -465,6 +477,7 @@ function normalizeSpeechConfig(input: unknown): SpeechConfig {
     pronunciation: normalizePronunciationEntries(source.pronunciation),
     voiceFallback: normalizeVoiceFallbackConfig(source.voiceFallback),
     transcriber: normalizeTranscriberConfig(source.transcriber),
+    backgroundNoise: normalizeBackgroundNoiseConfig(source.backgroundNoise),
   };
 }
 
