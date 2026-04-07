@@ -38,21 +38,13 @@ export async function POST(request: Request) {
 
     // Use Composio SDK to initiate connection - handles input fields properly
     const composio = new Composio({ apiKey: composioApiKey });
-    
-    const initOptions: { callbackUrl: string; config?: Record<string, string> } = {
-      callbackUrl,
-    };
-    
-    // Add input fields if provided (e.g., subdomain for Shopify/Zendesk)
-    if (Object.keys(inputFields).length > 0) {
-      initOptions.config = inputFields;
-    }
 
-    const connectionRequest = await composio.connectedAccounts.initiate(
+    const connectionRequest = await composio.connectedAccounts.initiate({
       entityId,
       integrationId,
-      initOptions
-    );
+      redirectUri: callbackUrl,
+      ...(Object.keys(inputFields).length > 0 ? { connectionParams: inputFields } : {}),
+    });
 
     return NextResponse.json(
       {
