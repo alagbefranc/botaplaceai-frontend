@@ -1,5 +1,7 @@
 "use client";
 
+import BotaLottieEmpty from "@/app/_components/BotaLottieEmpty";
+
 import {
   Alert,
   Card,
@@ -316,7 +318,7 @@ export function AnalyticsDashboard() {
                   <Skeleton active paragraph={{ rows: 6 }} />
                 ) : displayData.extractionsTrend.length === 0 ? (
                   <Empty
-                    image="/assets/illustrations/bota/analytics.svg" imageStyle={{ height: 60 }}
+                    image={<BotaLottieEmpty size={60} />} imageStyle={{ height: 60 }}
                     description="No data yet"
                     style={{ padding: 40 }}
                   />
@@ -354,7 +356,7 @@ export function AnalyticsDashboard() {
                   <Skeleton active paragraph={{ rows: 6 }} />
                 ) : displayData.sentimentDistribution.every((s) => s.value === 0) ? (
                   <Empty
-                    image="/assets/illustrations/bota/analytics.svg" imageStyle={{ height: 60 }}
+                    image={<BotaLottieEmpty size={60} />} imageStyle={{ height: 60 }}
                     description="No data yet"
                     style={{ padding: 40 }}
                   />
@@ -394,7 +396,7 @@ export function AnalyticsDashboard() {
               <Skeleton active paragraph={{ rows: 2 }} />
             ) : displayData.topIntents.length === 0 ? (
               <Empty
-                image="/assets/illustrations/bota/analytics.svg" imageStyle={{ height: 60 }}
+                image={<BotaLottieEmpty size={60} />} imageStyle={{ height: 60 }}
                 description="No intents extracted yet"
               />
             ) : (
@@ -429,7 +431,7 @@ export function AnalyticsDashboard() {
               locale={{
                 emptyText: (
                   <Empty
-                    image="/assets/illustrations/bota/analytics.svg" imageStyle={{ height: 60 }}
+                    image={<BotaLottieEmpty size={60} />} imageStyle={{ height: 60 }}
                     description="No extractions yet"
                   />
                 ),

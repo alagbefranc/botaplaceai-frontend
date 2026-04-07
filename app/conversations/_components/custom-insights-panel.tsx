@@ -1,5 +1,7 @@
 "use client";
 
+import BotaLottieEmpty from "@/app/_components/BotaLottieEmpty";
+
 import {
   Alert,
   Button,
@@ -272,7 +274,7 @@ export function CustomInsightsPanel({ conversationId, agentId }: CustomInsightsP
   if (results.length === 0 && definitions.length === 0) {
     return (
       <Empty
-        image="/assets/illustrations/bota/analytics.svg"
+        image={<BotaLottieEmpty />}
         imageStyle={{ height: 80 }}
         description={
           <Space direction="vertical" size={8}>

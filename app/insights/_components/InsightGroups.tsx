@@ -1,5 +1,7 @@
 "use client";
 
+import BotaLottieEmpty from "@/app/_components/BotaLottieEmpty";
+
 import {
   Alert,
   Button,
@@ -274,7 +276,7 @@ export function InsightGroups({ insights, onRefresh }: InsightGroupsProps) {
       ) : groups.length === 0 && !loading ? (
         <Card style={{ borderRadius: 12, textAlign: "center", padding: 48 }}>
           <Empty
-            image="/assets/illustrations/bota/analytics.svg"
+            image={<BotaLottieEmpty />}
             imageStyle={{ height: 80 }}
             description={
               <Space direction="vertical" size={12}>

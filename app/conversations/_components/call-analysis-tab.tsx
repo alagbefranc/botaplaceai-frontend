@@ -1,5 +1,7 @@
 "use client";
 
+import BotaLottieEmpty from "@/app/_components/BotaLottieEmpty";
+
 import {
   Alert,
   Button,
@@ -244,7 +246,7 @@ export function CallAnalysisTab({ conversationId }: CallAnalysisTabProps) {
         /* ── Empty state ── */
         <Card size="small" style={{ borderRadius: 10, textAlign: "center" }}>
           <Empty
-            image="/assets/illustrations/bota/analytics.svg"
+            image={<BotaLottieEmpty />}
             imageStyle={{ height: 80 }}
             description={
               <Space direction="vertical" size={8}>

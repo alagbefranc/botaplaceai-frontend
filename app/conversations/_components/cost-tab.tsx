@@ -1,5 +1,7 @@
 "use client";
 
+import BotaLottieEmpty from "@/app/_components/BotaLottieEmpty";
+
 import {
   Alert,
   Card,
@@ -127,7 +129,7 @@ export function CostTab({ conversationId }: CostTabProps) {
       <div style={{ padding: "16px 0" }}>
         <Card size="small" style={{ borderRadius: 10, textAlign: "center" }}>
           <Empty
-            image="/assets/illustrations/bota/analytics.svg"
+            image={<BotaLottieEmpty />}
             imageStyle={{ height: 80 }}
             description={
               <Typography.Text type="secondary">
