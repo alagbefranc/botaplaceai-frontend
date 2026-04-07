@@ -70,7 +70,7 @@ import { VoiceCallOrb } from "./voice-call-orb";
 
 const pendingProtectedActionStorageKey = "bo-support.pending-protected-action";
 const guestAgentDraftStorageKey = "bo-support.guest-agent-draft-count";
-const guestAgentDraftLimit = 1;
+const guestAgentDraftLimit = 3;
 
 type AuthMode = "signup" | "login";
 type BuilderStage =
@@ -242,6 +242,12 @@ export function HomeDashboard() {
 
     return "Good evening";
   }, []);
+
+  const displayName = useMemo(() => {
+    if (!authenticatedEmail) return "";
+    const local = authenticatedEmail.split("@")[0] || "";
+    return local.charAt(0).toUpperCase() + local.slice(1);
+  }, [authenticatedEmail]);
 
   const chatStarted = builderMessages.length > 0;
   const guestAgentDraftRemaining = Math.max(0, guestAgentDraftLimit - guestAgentDraftCount);
@@ -1658,12 +1664,12 @@ export function HomeDashboard() {
               priority
             />
             <Typography.Title level={3} className="builder-title">
-              {greeting}, Francis
+              {greeting}{displayName ? `, ${displayName}` : ""}
             </Typography.Title>
             <Typography.Paragraph className="builder-subtitle">
               {isAuthenticated
                 ? "Just describe what you need — build agents, run agentic workflows, explore insights, and deploy with confidence."
-                : "You are currently in guest mode. You can create one draft agent before signing in."}
+                : "You are currently in guest mode. You can create draft agents before signing in."}
             </Typography.Paragraph>
             {!isAuthenticated ? (
               <Typography.Text type="secondary">
@@ -1767,12 +1773,12 @@ export function HomeDashboard() {
                 priority
               />
               <Typography.Title level={3} className="builder-title">
-                {greeting}, Francis
+                {greeting}{displayName ? `, ${displayName}` : ""}
               </Typography.Title>
               <Typography.Paragraph className="builder-subtitle">
                 {isAuthenticated
                   ? "Just describe what you need — build agents, run agentic workflows, explore insights, and deploy with confidence."
-                  : "You are currently in guest mode. You can create one draft agent before signing in."}
+                  : "You are currently in guest mode. You can create draft agents before signing in."}
               </Typography.Paragraph>
               {!isAuthenticated ? (
                 <Typography.Text type="secondary">
@@ -1999,7 +2005,7 @@ export function HomeDashboard() {
         <header className="dashboard-header">
           <div>
             <Typography.Title level={4} className="dashboard-title">
-              {greeting}, Francis
+              {greeting}{displayName ? `, ${displayName}` : ""}
             </Typography.Title>
             <Typography.Text type="secondary">
               {isAuthenticated
