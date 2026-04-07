@@ -268,23 +268,6 @@ export default function WidgetPage() {
   useEffect(() => {
     const loadAgents = async () => {
       if (!supabase) { setLoading(false); return; }
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        // Try loading agents for the org stored in localStorage
-        const orgId = typeof window !== "undefined" ? window.localStorage.getItem("orgId") : null;
-        if (orgId) {
-          const { data, error } = await supabase.from("agents")
-            .select("id, name, greeting_message, status")
-            .eq("status", "active").eq("org_id", orgId).order("created_at", { ascending: false });
-          if (!error && data && data.length > 0) {
-            setAgents(data);
-            setSelectedAgentId(data[0].id);
-            if (data[0].greeting_message) setGreeting(data[0].greeting_message);
-          }
-        }
-        setLoading(false);
-        return;
-      }
       const { data, error } = await supabase.from("agents")
         .select("id, name, greeting_message, status")
         .eq("status", "active").order("created_at", { ascending: false });
@@ -1184,21 +1167,26 @@ export function BotaWidget({ agentId, apiBase = window.location.origin }) {
                 })}
               </div>
             ) : (
-              /* Mobile: real iPhone 15 Pro mockup */
+              /* Mobile: CSS iPhone frame */
               <div style={{ background: "#94A3B8", minHeight: 780, borderRadius: "0 0 8px 8px", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 0" }}>
-                {/*
-                  Phone body in 5000×5000 image: x=[1550,3450] w=1900px, y=[200,4800] h=4600px
-                  Scale = 300/1900 = 0.1579 → image display = 789×789px
-                  Container = 300 × 726px  |  offset left=-245px top=-32px
-                  Screen area (scaled bezels): left:5 right:5 top:8 bottom:3 borderRadius:47
-                */}
-              <div style={{ width: 300, height: 726, position: "relative", flexShrink: 0, overflow: "hidden", isolation: "isolate" }}>
-                  {/* Screen content — sits behind the phone image overlay */}
+                {/* Phone body — pure CSS frame */}
+                <div style={{
+                  width: 300, height: 640, position: "relative", flexShrink: 0,
+                  borderRadius: 44, border: "6px solid #1a1a1a",
+                  background: "#1a1a1a",
+                  boxShadow: "0 20px 60px rgba(0,0,0,0.3), inset 0 0 0 2px #333",
+                  overflow: "hidden",
+                }}>
+                  {/* Dynamic island */}
                   <div style={{
-                    position: "absolute",
-                    left: 5, right: 5, top: 8, bottom: 3,
+                    position: "absolute", top: 10, left: "50%", transform: "translateX(-50%)",
+                    width: 90, height: 24, borderRadius: 20, background: "#1a1a1a", zIndex: 20,
+                  }} />
+                  {/* Screen content */}
+                  <div style={{
+                    position: "absolute", inset: 0,
+                    borderRadius: 38,
                     overflow: "hidden",
-                    borderRadius: 47,
                     background: "#fff",
                   }}>
                     {/* Page skeleton visible when widget is closed */}
@@ -1218,20 +1206,11 @@ export function BotaWidget({ agentId, apiBase = window.location.origin }) {
                       isMobileSize: true,
                     })}
                   </div>
-                  {/* iPhone mockup image — mix-blend-mode: multiply makes white transparent,
-                      revealing content below while keeping the dark frame visible */}
-                  <img
-                    src="/assets/mockups/iphone-mockup.jpg"
-                    alt="iPhone frame"
-                    style={{
-                      position: "absolute",
-                      width: 789, height: 789,
-                      left: -245, top: -32,
-                      pointerEvents: "none",
-                      mixBlendMode: "multiply",
-                      zIndex: 10,
-                    }}
-                  />
+                  {/* Home indicator */}
+                  <div style={{
+                    position: "absolute", bottom: 6, left: "50%", transform: "translateX(-50%)",
+                    width: 100, height: 4, borderRadius: 2, background: "#666", zIndex: 20,
+                  }} />
                 </div>
               </div>
             )}
