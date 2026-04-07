@@ -50,7 +50,7 @@
       .fab-bar{width:3px;border-radius:2px;background:'+c+';transition:height .15s}\
       .fab-text{display:flex;flex-direction:column;line-height:1.2}\
       .fab-title{font-size:13px;font-weight:500}.fab-sub{font-size:11px;opacity:.7}\
-      .win{width:24rem;max-height:min(38rem,calc(100vh - 7rem));background:#fff;border-radius:1rem;\
+      .win{width:24rem;height:min(42rem,calc(100vh - 6rem));background:#fff;border-radius:1rem;\
         box-shadow:0 25px 50px -12px rgba(0,0,0,.25);overflow:hidden;display:flex;flex-direction:column;\
         animation:slideIn .25s cubic-bezier(0,1.2,1,1)}\
       @keyframes slideIn{from{opacity:0;transform:scale(.92) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}\
