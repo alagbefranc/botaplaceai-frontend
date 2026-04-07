@@ -1,0 +1,13 @@
+export { CoreSettingsTab } from "./CoreSettingsTab";
+export { BehaviorTab } from "./BehaviorTab";
+export { MessagesTab } from "./MessagesTab";
+export { SpeechTab } from "./SpeechTab";
+export { ToolsTab } from "./ToolsTab";
+export { AdvancedTab } from "./AdvancedTab";
+export { MemoryTab } from "./MemoryTab";
+export { InsightsTab } from "./InsightsTab";
+export { KnowledgeTab } from "./KnowledgeTab";
+export { SecurityTab } from "./SecurityTab";
+export { EscalationTab } from "./EscalationTab";
+export { TrainingTab } from "./TrainingTab";
+export type { EditableAgent, TabProps } from "./types";

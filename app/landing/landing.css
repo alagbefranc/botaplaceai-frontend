@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Scope Space Grotesk to the landing wrapper only */
+[style*="Space Grotesk"],
+.font-sans {
+  font-family: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .bg-grid {
+    background-size: 48px 48px;
+    background-image:
+      linear-gradient(to right, rgba(21, 21, 21, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(21, 21, 21, 0.04) 1px, transparent 1px);
+    background-position: center top;
+  }
+
+  .logo-grid > div {
+    border-right: 1px solid #e8e6db;
+    border-bottom: 1px solid #e8e6db;
+  }
+
+  .logo-grid-5 > div:nth-child(5n) {
+    border-right: none;
+  }
+
+  .logo-grid-6 > div:nth-child(6n) {
+    border-right: none;
+  }
+
+  @media (max-width: 1024px) {
+    .logo-grid-5 > div:nth-child(5n) {
+      border-right: 1px solid #e8e6db;
+    }
+    .logo-grid-5 > div:nth-child(3n) {
+      border-right: none;
+    }
+    .logo-grid-6 > div:nth-child(6n) {
+      border-right: 1px solid #e8e6db;
+    }
+    .logo-grid-6 > div:nth-child(4n) {
+      border-right: none;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .logo-grid-5 > div:nth-child(3n) {
+      border-right: 1px solid #e8e6db;
+    }
+    .logo-grid-5 > div:nth-child(2n) {
+      border-right: none;
+    }
+    .logo-grid-6 > div:nth-child(4n) {
+      border-right: 1px solid #e8e6db;
+    }
+    .logo-grid-6 > div:nth-child(2n) {
+      border-right: none;
+    }
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(2deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -1,0 +1,153 @@
+.admin-layout {
+  min-height: 100vh;
+}
+
+.admin-loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+}
+
+.admin-sider {
+  border-right: 1px solid #f0f0f0;
+  background: #fff !important;
+}
+
+.admin-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.admin-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.admin-menu {
+  border: none !important;
+  padding: 12px 8px;
+}
+
+.admin-menu .ant-menu-item {
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+.admin-header {
+  background: #fff;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f0f0f0;
+  height: 56px;
+}
+
+.admin-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.admin-header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.admin-header-icon {
+  font-size: 18px;
+  color: #64748b;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.admin-header-icon:hover {
+  color: #1e293b;
+}
+
+.admin-user-dropdown {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.admin-user-dropdown:hover {
+  background: #f5f5f5;
+}
+
+.admin-content {
+  padding: 24px;
+  background: #f8fafc;
+  min-height: calc(100vh - 56px);
+  overflow-y: auto;
+}
+
+/* Admin Page Styles */
+.admin-page-header {
+  margin-bottom: 24px;
+}
+
+.admin-page-title {
+  margin: 0 0 4px 0 !important;
+}
+
+.admin-stats-row {
+  margin-bottom: 24px;
+}
+
+.admin-stat-card {
+  border-radius: 12px;
+  height: 100%;
+}
+
+.admin-card {
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.admin-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Service Health Cards */
+.admin-service-card {
+  border-radius: 10px;
+  border-left-width: 4px;
+  border-left-style: solid;
+}
+
+.admin-service-card-healthy {
+  border-left-color: #22c55e;
+}
+
+.admin-service-card-degraded {
+  border-left-color: #f59e0b;
+}
+
+.admin-service-card-down {
+  border-left-color: #ef4444;
+}
+
+/* Active Sessions Table */
+.admin-sessions-table .ant-table-thead > tr > th {
+  background: #fafafa;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin-sider {
+    display: none;
+  }
+
+  .admin-content {
+    padding: 16px;
+  }
+}
