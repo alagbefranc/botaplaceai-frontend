@@ -9,6 +9,16 @@ function getDb() {
   return createClient(url, key);
 }
 
+// Replace template variables with sensible defaults for widget context
+function resolveTemplateVars(text: string, context?: Record<string, string>): string {
+  const defaults: Record<string, string> = {
+    callerName: "there", customerName: "there", patientName: "there",
+    userName: "there", name: "there", firstName: "there",
+  };
+  const merged = { ...defaults, ...context };
+  return text.replace(/\{\{(\w+)\}\}/g, (_, key) => merged[key] || "");
+}
+
 // GET — public endpoint for embeddable widget to fetch config
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -47,7 +57,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       id: agent.id,
       name: widgetConfig?.widget_title || agent.name,
-      greeting: widgetConfig?.greeting || agent.greeting_message || "Hi! How can I help you today?",
+      greeting: resolveTemplateVars(widgetConfig?.greeting || agent.greeting_message || "Hi! How can I help you today?"),
       color: widgetConfig?.accent_color || "#7C3AED",
       position: widgetConfig?.position || "bottom-right",
       avatar_url: widgetConfig?.avatar_url || null,

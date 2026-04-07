@@ -259,6 +259,16 @@ export default function WidgetPage() {
     setAgentAvatarUrl(url);
   };
 
+  // Replace {{templateVars}} with sensible defaults
+  const resolveVars = (text: string) =>
+    text.replace(/\{\{(\w+)\}\}/g, (_, key: string) => {
+      const defaults: Record<string, string> = {
+        callerName: "there", customerName: "there", patientName: "there",
+        userName: "there", name: "there", firstName: "there",
+      };
+      return defaults[key] || "";
+    });
+
   const bg = theme === "dark" ? "#111827" : "#FFFFFF";
   const textPrimary = theme === "dark" ? "#F9FAFB" : "#111827";
   const textSecondary = theme === "dark" ? "#9CA3AF" : "#6B7280";
@@ -278,7 +288,7 @@ export default function WidgetPage() {
         setAgents(data);
         if (data.length > 0) {
           setSelectedAgentId(data[0].id);
-          if (data[0].greeting_message) setGreeting(data[0].greeting_message);
+          if (data[0].greeting_message) setGreeting(resolveVars(data[0].greeting_message));
         }
       }
       setLoading(false);
@@ -307,7 +317,7 @@ export default function WidgetPage() {
         setWidgetTitle(data.widget_title || "Talk with AI");
         setCtaTitle(data.cta_title || "Need help?");
         setCtaSubtitle(data.cta_subtitle || "Chat with our AI assistant");
-        if (data.greeting) setGreeting(data.greeting);
+        if (data.greeting) setGreeting(resolveVars(data.greeting));
         setChatPlaceholder(data.chat_placeholder || "Type your message...");
         if (data.avatar_url) setAgentAvatarUrl(data.avatar_url);
         setVoiceShowTranscript(data.voice_show_transcript || false);
@@ -921,7 +931,7 @@ export function BotaWidget({ agentId, apiBase = window.location.origin }) {
                 onChange={id => {
                   setSelectedAgentId(id);
                   const a = agents.find(ag => ag.id === id);
-                  if (a?.greeting_message) setGreeting(a.greeting_message);
+                  if (a?.greeting_message) setGreeting(resolveVars(a.greeting_message));
                   setChatMessages([]);
                 }}
                 options={agents.map(a => ({ label: a.name, value: a.id }))}
