@@ -3,10 +3,18 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
+  DEFAULT_ESCALATION_CONFIG,
+  DEFAULT_GUARDRAILS_CONFIG,
+  DEFAULT_INSIGHT_EXTRACTION_CONFIG,
   DEFAULT_LIVE_API_CONFIG,
+  DEFAULT_MEMORY_CONFIG,
   type ChannelKey,
+  type EscalationConfig,
+  type GuardrailsConfig,
+  type InsightExtractionConfig,
   type LiveApiConfig,
   type BackgroundNoiseConfig,
+  type MemoryConfig,
   type VoicePersonalityConfig,
   type CustomFunction,
   type VoiceEmotion,
@@ -43,6 +51,11 @@ export interface AgentBuilderDraft {
   enabledSkills: string[];
   // Custom functions
   customFunctions: CustomFunction[];
+  // Full config tabs
+  guardrails: GuardrailsConfig;
+  memory: MemoryConfig;
+  escalation: EscalationConfig;
+  insightExtraction: InsightExtractionConfig;
 }
 
 interface AgentBuilderState {
@@ -73,6 +86,11 @@ interface AgentBuilderState {
   addCustomFunction: (func: CustomFunction) => void;
   updateCustomFunction: (id: string, func: Partial<CustomFunction>) => void;
   removeCustomFunction: (id: string) => void;
+  // Full config tabs
+  setGuardrails: (config: Partial<GuardrailsConfig>) => void;
+  setMemory: (config: Partial<MemoryConfig>) => void;
+  setEscalation: (config: Partial<EscalationConfig>) => void;
+  setInsightExtraction: (config: Partial<InsightExtractionConfig>) => void;
   addKnowledgeFile: (file: KnowledgeFileDraft) => void;
   removeKnowledgeFile: (id: string) => void;
   setDraftFromServer: (draft: Partial<AgentBuilderDraft>) => void;
@@ -117,6 +135,11 @@ export const defaultAgentBuilderDraft: AgentBuilderDraft = {
   ],
   // Custom functions
   customFunctions: [],
+  // Full config tabs
+  guardrails: { ...DEFAULT_GUARDRAILS_CONFIG },
+  memory: { ...DEFAULT_MEMORY_CONFIG },
+  escalation: { ...DEFAULT_ESCALATION_CONFIG },
+  insightExtraction: { ...DEFAULT_INSIGHT_EXTRACTION_CONFIG },
 };
 
 export const useAgentBuilderStore = create<AgentBuilderState>()(
@@ -299,6 +322,22 @@ export const useAgentBuilderStore = create<AgentBuilderState>()(
             customFunctions: state.draft.customFunctions.filter((f) => f.id !== id),
           },
         })),
+      setGuardrails: (config) =>
+        set((state) => ({
+          draft: { ...state.draft, guardrails: { ...state.draft.guardrails, ...config } },
+        })),
+      setMemory: (config) =>
+        set((state) => ({
+          draft: { ...state.draft, memory: { ...state.draft.memory, ...config } },
+        })),
+      setEscalation: (config) =>
+        set((state) => ({
+          draft: { ...state.draft, escalation: { ...state.draft.escalation, ...config } },
+        })),
+      setInsightExtraction: (config) =>
+        set((state) => ({
+          draft: { ...state.draft, insightExtraction: { ...state.draft.insightExtraction, ...config } },
+        })),
       addKnowledgeFile: (file) =>
         set((state) => ({
           draft: {
@@ -337,6 +376,18 @@ export const useAgentBuilderStore = create<AgentBuilderState>()(
             responseTimeout: draft.responseTimeout ?? state.draft.responseTimeout,
             enabledSkills: draft.enabledSkills ?? state.draft.enabledSkills,
             customFunctions: draft.customFunctions ?? state.draft.customFunctions,
+            guardrails: draft.guardrails
+              ? { ...state.draft.guardrails, ...draft.guardrails }
+              : state.draft.guardrails,
+            memory: draft.memory
+              ? { ...state.draft.memory, ...draft.memory }
+              : state.draft.memory,
+            escalation: draft.escalation
+              ? { ...state.draft.escalation, ...draft.escalation }
+              : state.draft.escalation,
+            insightExtraction: draft.insightExtraction
+              ? { ...state.draft.insightExtraction, ...draft.insightExtraction }
+              : state.draft.insightExtraction,
           },
         })),
       resetDraft: () => {
@@ -357,6 +408,10 @@ export const useAgentBuilderStore = create<AgentBuilderState>()(
             responseTimeout: defaultAgentBuilderDraft.responseTimeout,
             enabledSkills: [...defaultAgentBuilderDraft.enabledSkills],
             customFunctions: [],
+            guardrails: { ...DEFAULT_GUARDRAILS_CONFIG },
+            memory: { ...DEFAULT_MEMORY_CONFIG },
+            escalation: { ...DEFAULT_ESCALATION_CONFIG },
+            insightExtraction: { ...DEFAULT_INSIGHT_EXTRACTION_CONFIG },
           },
           currentStep: 0,
         });

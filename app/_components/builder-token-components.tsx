@@ -3,9 +3,13 @@
 import {
   CheckCircleFilled,
   CloseCircleFilled,
+  DatabaseOutlined,
   DeploymentUnitOutlined,
   LoadingOutlined,
+  MessageOutlined,
+  PhoneOutlined,
   RobotOutlined,
+  SafetyCertificateOutlined,
   SearchOutlined,
   SettingOutlined,
   SoundOutlined,
@@ -172,7 +176,7 @@ export type SpecialTokenType = "voice_picker" | "tool_picker" | "channel_picker"
 
 // Field update tokens
 export interface FieldUpdate {
-  field: "purpose" | "name" | "prompt" | "voice" | "tools" | "channels";
+  field: "purpose" | "name" | "prompt" | "voice" | "tools" | "channels" | "greeting" | "memory" | "guardrails" | "escalation";
   value: string;
 }
 
@@ -198,6 +202,10 @@ const FIELD_UPDATE_PATTERNS: Array<{ pattern: RegExp; field: FieldUpdate["field"
   { pattern: /\[SET_VOICE:([^\]]+)\]/g, field: "voice" },
   { pattern: /\[SET_TOOLS:([^\]]+)\]/g, field: "tools" },
   { pattern: /\[SET_CHANNELS:([^\]]+)\]/g, field: "channels" },
+  { pattern: /\[SET_GREETING:([^\]]+)\]/g, field: "greeting" },
+  { pattern: /\[SET_MEMORY:([^\]]+)\]/g, field: "memory" },
+  { pattern: /\[SET_GUARDRAILS:([^\]]+)\]/g, field: "guardrails" },
+  { pattern: /\[SET_ESCALATION:([^\]]+)\]/g, field: "escalation" },
 ];
 
 export function parseSpecialTokens(content: string): ParsedMessageContent {
@@ -235,6 +243,10 @@ export const FIELD_DISPLAY_NAMES: Record<FieldUpdate["field"], string> = {
   voice: "Configuring voice",
   tools: "Adding tools",
   channels: "Setting up channels",
+  greeting: "Setting greeting message",
+  memory: "Configuring memory",
+  guardrails: "Setting guardrails",
+  escalation: "Configuring escalation",
 };
 
 export const FIELD_ICONS: Record<FieldUpdate["field"], ReactNode> = {
@@ -244,6 +256,10 @@ export const FIELD_ICONS: Record<FieldUpdate["field"], ReactNode> = {
   voice: <SoundOutlined />,
   tools: <ToolOutlined />,
   channels: <SwapOutlined />,
+  greeting: <MessageOutlined />,
+  memory: <DatabaseOutlined />,
+  guardrails: <SafetyCertificateOutlined />,
+  escalation: <PhoneOutlined />,
 };
 
 export interface RenderTokenOptions {

@@ -553,6 +553,10 @@ export function HomeDashboard() {
           channels: draft.channels,
           greetingMessage: draft.greetingMessage,
           liveApi: draft.liveApi,
+          memory: draft.memory,
+          guardrails: draft.guardrails,
+          escalation: draft.escalation,
+          insightExtraction: draft.insightExtraction,
           status: "active",
         }),
       });

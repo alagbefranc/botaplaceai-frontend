@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 import {
   buildWidgetEmbedCode,
+  DEFAULT_ESCALATION_CONFIG,
+  DEFAULT_GUARDRAILS_CONFIG,
+  DEFAULT_INSIGHT_EXTRACTION_CONFIG,
   DEFAULT_LIVE_API_CONFIG,
+  DEFAULT_MEMORY_CONFIG,
+  type EscalationConfig,
+  type GuardrailsConfig,
+  type InsightExtractionConfig,
   type LiveApiConfig,
   type LiveApiEndSensitivity,
   type LiveApiMediaResolution,
@@ -9,6 +16,7 @@ import {
   type LiveApiStartSensitivity,
   type LiveApiThinkingLevel,
   type LiveApiTurnCoverage,
+  type MemoryConfig,
 } from "@/lib/domain/agent-builder";
 import { ApiRouteError, getOrgMemberContext } from "@/lib/server/org-member";
 import { provisionVoiceLine } from "@/lib/server/voice-line-service";
@@ -25,6 +33,10 @@ interface DeployAgentBody {
   greetingMessage?: string;
   status?: "draft" | "active" | "paused";
   liveApi?: Partial<LiveApiConfig>;
+  memory?: Partial<MemoryConfig>;
+  guardrails?: Partial<GuardrailsConfig>;
+  escalation?: Partial<EscalationConfig>;
+  insightExtraction?: Partial<InsightExtractionConfig>;
 }
 
 const liveApiModels: LiveApiModel[] = [
@@ -168,6 +180,10 @@ export async function POST(request: Request) {
     const channels = sanitizeArray(body.channels, ["web_chat"]);
     const tools = sanitizeArray(body.tools);
     const liveApi = normalizeLiveApiConfig(body.liveApi);
+    const memory: MemoryConfig = { ...DEFAULT_MEMORY_CONFIG, ...(isRecord(body.memory) ? body.memory : {}) };
+    const guardrails: GuardrailsConfig = { ...DEFAULT_GUARDRAILS_CONFIG, ...(isRecord(body.guardrails) ? body.guardrails : {}) };
+    const escalation: EscalationConfig = { ...DEFAULT_ESCALATION_CONFIG, ...(isRecord(body.escalation) ? body.escalation : {}) };
+    const insightExtraction: InsightExtractionConfig = { ...DEFAULT_INSIGHT_EXTRACTION_CONFIG, ...(isRecord(body.insightExtraction) ? body.insightExtraction : {}) };
 
     const payload = {
       name: body.name?.trim() || "Untitled Agent",
@@ -185,6 +201,10 @@ export async function POST(request: Request) {
       settings: {
         deployed_at: new Date().toISOString(),
         live_api: liveApi,
+        memory,
+        guardrails,
+        escalation,
+        insightExtraction,
       },
     };
 

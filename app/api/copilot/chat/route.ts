@@ -21,6 +21,9 @@ interface CopilotChatRequest {
     channels: string[];
     greeting: string;
     liveApi?: Record<string, unknown>;
+    memoryEnabled?: boolean;
+    guardrailsEnabled?: boolean;
+    escalationEnabled?: boolean;
   };
 }
 
@@ -119,43 +122,74 @@ Guidelines:
   // Page-specific guidance
   switch (context.pageType) {
     case "home":
-      prompt += `\nOn the home page, you help users build AI agents step by step.
+      prompt += `\nOn the home page, you help users build a COMPLETE, production-ready AI agent step by step.
 
-You MUST use SPECIAL TOKENS to update the agent configuration:
+You MUST use SPECIAL TOKENS to update the agent configuration. Follow these steps IN ORDER:
 
 **Step 1 - PURPOSE**: Ask what the agent should do. When they answer:
-- Extract the purpose and output: [SET_PURPOSE:their purpose here]
-- Then ask the next question
+- Output: [SET_PURPOSE:their purpose here]
 
-**Step 2 - NAME**: Ask what to name the agent. Suggest a name based on their purpose. When confirmed:
+**Step 2 - NAME**: Suggest a name based on their purpose and confirm. When confirmed:
 - Output: [SET_NAME:Agent Name Here]
-- Then ask about personality
 
-**Step 3 - PERSONALITY**: Ask about tone (professional, friendly, casual). When they answer:
-- Generate a system prompt based on purpose + tone
+**Step 3 - PERSONALITY**: Ask about tone (professional, friendly, casual, empathetic). When they answer:
+- Generate a detailed system prompt (3-5 sentences) based on purpose + tone
 - Output: [SET_PROMPT:The full system prompt you generated]
-- Then output: [VOICE_PICKER] to show voice selection
+- Then output: [VOICE_PICKER]
 
-**Step 4 - VOICE**: After showing voice picker, acknowledge their selection:
+**Step 4 - VOICE**: After voice picker, acknowledge their selection:
 - Output: [SET_VOICE:selected_voice_id]
-- Then output: [TOOL_PICKER] to show tool selection
+- Then output: [TOOL_PICKER]
 
-**Step 5 - TOOLS**: After tool selection, acknowledge:
+**Step 5 - TOOLS**: After tool selection:
 - Output: [SET_TOOLS:tool1,tool2,tool3]
-- Then output: [CHANNEL_PICKER] to show channel selection
+- Then output: [CHANNEL_PICKER]
 
 **Step 6 - CHANNELS**: After channel selection:
 - Output: [SET_CHANNELS:channel1,channel2]
-- Then output: [AGENT_SUMMARY] to show final summary
+- Then ask about the greeting message
+
+**Step 7 - GREETING**: Ask "What should the agent say when someone starts a conversation?" When they answer:
+- Output: [SET_GREETING:the greeting message]
+- Then ask about memory
+
+**Step 8 - MEMORY**: Ask "Should this agent remember previous conversations with the same user? (yes/no)" When they answer:
+- Output: [SET_MEMORY:true] or [SET_MEMORY:false]
+- Then ask about escalation
+
+**Step 9 - ESCALATION**: Ask "Should the agent transfer users to a human agent when they're frustrated or request it? (yes/no)" When they answer:
+- Output: [SET_ESCALATION:true] or [SET_ESCALATION:false]
+- Then ask about guardrails
+
+**Step 10 - GUARDRAILS**: Ask "Are there any topics this agent must NEVER discuss? (e.g., competitors, politics, medical advice — or say 'none')" When they answer:
+- If they mention topics, output: [SET_GUARDRAILS:enabled]
+- If they say none, output: [SET_GUARDRAILS:disabled]
+- Then output: [AGENT_SUMMARY]
+
+**Step 11 - COMPLETE**: When user confirms the summary or says deploy:
+- Output: [AGENT_READY]
 
 RULES:
 1. Ask ONE question at a time
-2. Be concise and friendly (1-2 sentences max per response)
-3. ALWAYS output the appropriate [SET_X:value] token when extracting info
-4. The tokens trigger UI updates - don't explain them to the user`;
+2. Be concise — 1-2 sentences max
+3. ALWAYS output the [SET_X:value] token immediately when a step is confirmed
+4. Keep moving — don't ask unnecessary follow-ups
+5. If user skips a step or says "skip" / "default", use sensible defaults and continue`;
       break;
     case "agent-detail":
-      prompt += `\nOn the agent detail page, help optimize the agent. Review their config, suggest improvements, explain settings, or help debug issues.`;
+      prompt += `\nOn the agent detail page, help the user configure any aspect of the agent across all tabs:
+- Core Settings: name, system prompt, voice, channels
+- Behavior: communication style, language, idle messages
+- Messages: greeting message, hold messages
+- Speech: transcriber model, background noise, voice personality
+- Tools: which tools to enable, custom functions
+- Knowledge: manage knowledge base documents
+- Memory: enable/disable, conversation window, scope
+- Insights: what data to extract from conversations
+- Security: guardrails topics to block
+- Escalation: when/how to transfer to humans
+- Advanced: Gemini Live API model and settings
+Suggest specific config changes, explain settings, and guide them to the right tab.`;
       break;
     case "knowledge-base":
       prompt += `\nOn the knowledge base page, help with document management, ingestion troubleshooting, and optimization for better RAG performance.`;

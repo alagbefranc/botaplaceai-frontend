@@ -280,6 +280,9 @@ export function AgentCopilot({
             channels: builderStore.draft.channels,
             greeting: builderStore.draft.greetingMessage,
             liveApi: builderStore.draft.liveApi,
+            memoryEnabled: builderStore.draft.memory.enabled,
+            guardrailsEnabled: builderStore.draft.guardrails.enabled,
+            escalationEnabled: builderStore.draft.escalation.enabled,
           } : undefined,
         }),
       });
@@ -375,6 +378,18 @@ export function AgentCopilot({
                             builderStore.setChannels(channelValues as ("web_chat" | "web_voice" | "phone" | "whatsapp" | "sms")[]);
                             break;
                           }
+                          case "greeting":
+                            builderStore.setGreetingMessage(update.value);
+                            break;
+                          case "memory":
+                            builderStore.setMemory({ enabled: update.value === "true" || update.value === "yes" });
+                            break;
+                          case "guardrails":
+                            builderStore.setGuardrails({ enabled: update.value !== "false" && update.value !== "no" });
+                            break;
+                          case "escalation":
+                            builderStore.setEscalation({ enabled: update.value === "true" || update.value === "yes" });
+                            break;
                         }
                       }
                     }
