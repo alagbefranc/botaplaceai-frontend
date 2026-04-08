@@ -50,8 +50,12 @@ import {
   type AnalysisPlan,
   type BackgroundNoiseConfig,
   type AmbientPreset,
+  type MemoryConfig,
+  type InsightExtractionConfig,
   DEFAULT_ANALYSIS_PLAN,
   DEFAULT_BACKGROUND_NOISE_CONFIG,
+  DEFAULT_MEMORY_CONFIG,
+  DEFAULT_INSIGHT_EXTRACTION_CONFIG,
 } from "@/lib/domain/agent-builder";
 import { ApiRouteError, getOrgMemberContext } from "@/lib/server/org-member";
 
@@ -76,6 +80,8 @@ interface AgentWriteBody {
   customInsights?: Partial<CustomInsightsConfig>;
   guardrails?: Partial<GuardrailsConfig>;
   analysisPlan?: Partial<AnalysisPlan>;
+  memory?: Partial<MemoryConfig>;
+  insightExtraction?: Partial<InsightExtractionConfig>;
 }
 
 const liveApiModels: LiveApiModel[] = [
@@ -693,6 +699,44 @@ function normalizeGuardrailsConfig(input: unknown): GuardrailsConfig {
 }
 
 // ============================================================================
+// MEMORY CONFIG NORMALIZATION
+// ============================================================================
+
+function normalizeMemoryConfig(input: unknown): MemoryConfig {
+  const source = isRecord(input) ? input : {};
+  return {
+    enabled: typeof source.enabled === "boolean" ? source.enabled : DEFAULT_MEMORY_CONFIG.enabled,
+    scope: pickEnumValue(source.scope, ["all", "per_user", "per_group"], DEFAULT_MEMORY_CONFIG.scope),
+    identifierField: pickEnumValue(source.identifierField, ["phone", "email", "session_id", "custom"], DEFAULT_MEMORY_CONFIG.identifierField),
+    customIdentifierPath: typeof source.customIdentifierPath === "string" ? source.customIdentifierPath : undefined,
+    maxConversations: clampInteger(source.maxConversations, DEFAULT_MEMORY_CONFIG.maxConversations, 1, 50),
+    timeWindowDays: clampInteger(source.timeWindowDays, DEFAULT_MEMORY_CONFIG.timeWindowDays, 1, 365),
+    includeInsightTypes: Array.isArray(source.includeInsightTypes)
+      ? source.includeInsightTypes.filter((t): t is string => typeof t === "string")
+      : DEFAULT_MEMORY_CONFIG.includeInsightTypes,
+    webhookEnabled: typeof source.webhookEnabled === "boolean" ? source.webhookEnabled : DEFAULT_MEMORY_CONFIG.webhookEnabled,
+    webhookUrl: typeof source.webhookUrl === "string" ? source.webhookUrl : undefined,
+    webhookTimeoutMs: clampInteger(source.webhookTimeoutMs, DEFAULT_MEMORY_CONFIG.webhookTimeoutMs, 100, 10000),
+  };
+}
+
+// ============================================================================
+// INSIGHT EXTRACTION CONFIG NORMALIZATION
+// ============================================================================
+
+function normalizeInsightExtractionConfig(input: unknown): InsightExtractionConfig {
+  const source = isRecord(input) ? input : {};
+  return {
+    enabled: typeof source.enabled === "boolean" ? source.enabled : DEFAULT_INSIGHT_EXTRACTION_CONFIG.enabled,
+    extractUserProfile: typeof source.extractUserProfile === "boolean" ? source.extractUserProfile : DEFAULT_INSIGHT_EXTRACTION_CONFIG.extractUserProfile,
+    extractIntent: typeof source.extractIntent === "boolean" ? source.extractIntent : DEFAULT_INSIGHT_EXTRACTION_CONFIG.extractIntent,
+    extractSentiment: typeof source.extractSentiment === "boolean" ? source.extractSentiment : DEFAULT_INSIGHT_EXTRACTION_CONFIG.extractSentiment,
+    extractActionItems: typeof source.extractActionItems === "boolean" ? source.extractActionItems : DEFAULT_INSIGHT_EXTRACTION_CONFIG.extractActionItems,
+    autoExtractOnEnd: typeof source.autoExtractOnEnd === "boolean" ? source.autoExtractOnEnd : DEFAULT_INSIGHT_EXTRACTION_CONFIG.autoExtractOnEnd,
+  };
+}
+
+// ============================================================================
 // EXTRACTION FUNCTIONS
 // ============================================================================
 
@@ -731,6 +775,16 @@ function extractGuardrailsFromSettings(settings: unknown): GuardrailsConfig {
   return normalizeGuardrailsConfig(settings.guardrails);
 }
 
+function extractMemoryFromSettings(settings: unknown): MemoryConfig {
+  if (!isRecord(settings)) return { ...DEFAULT_MEMORY_CONFIG };
+  return normalizeMemoryConfig(settings.memory);
+}
+
+function extractInsightExtractionFromSettings(settings: unknown): InsightExtractionConfig {
+  if (!isRecord(settings)) return { ...DEFAULT_INSIGHT_EXTRACTION_CONFIG };
+  return normalizeInsightExtractionConfig(settings.insightExtraction);
+}
+
 function normalizeAnalysisPlan(raw: unknown): AnalysisPlan {
   if (!isRecord(raw)) return { ...DEFAULT_ANALYSIS_PLAN };
   return {
@@ -755,6 +809,8 @@ function mapAgentResponse(agent: Record<string, unknown>) {
     provider: extractProviderFromSettings(agent.settings),
     customInsights: extractCustomInsightsFromSettings(agent.settings),
     guardrails: extractGuardrailsFromSettings(agent.settings),
+    memory: extractMemoryFromSettings(agent.settings),
+    insightExtraction: extractInsightExtractionFromSettings(agent.settings),
     analysisPlan: normalizeAnalysisPlan(agent.analysis_plan),
   };
 }
@@ -768,6 +824,8 @@ function normalizeAgentBody(body: AgentWriteBody) {
   const provider = normalizeProviderConfig(body.provider);
   const customInsights = normalizeCustomInsightsConfig(body.customInsights);
   const guardrails = normalizeGuardrailsConfig(body.guardrails);
+  const memory = normalizeMemoryConfig(body.memory);
+  const insightExtraction = normalizeInsightExtractionConfig(body.insightExtraction);
   const analysisPlan = normalizeAnalysisPlan(body.analysisPlan);
 
   return {
@@ -789,6 +847,10 @@ function normalizeAgentBody(body: AgentWriteBody) {
       provider,
       custom_insights: customInsights,
       guardrails,
+      memory,
+      insightExtraction,
+      // Also write escalation at top-level so backend can read it from settings.escalation
+      escalation: toolsConfig.escalation,
     },
   };
 }
@@ -888,6 +950,8 @@ export async function POST(request: Request) {
         provider: body.provider ?? extractProviderFromSettings(existingRecord.settings),
         customInsights: body.customInsights ?? extractCustomInsightsFromSettings(existingRecord.settings),
         guardrails: body.guardrails ?? extractGuardrailsFromSettings(existingRecord.settings),
+        memory: body.memory ?? extractMemoryFromSettings(existingRecord.settings),
+        insightExtraction: body.insightExtraction ?? extractInsightExtractionFromSettings(existingRecord.settings),
         analysisPlan: body.analysisPlan ?? normalizeAnalysisPlan(existingRecord.analysis_plan),
       };
 
