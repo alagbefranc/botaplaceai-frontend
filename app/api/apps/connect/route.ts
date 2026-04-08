@@ -88,15 +88,17 @@ export async function POST(request: Request) {
     const entityId = member.orgId;
     const callbackUrl = `${new URL(request.url).origin}/apps`;
 
-    // Initiate connection via Composio REST API directly (avoids SDK version issues)
-    const initiateRes = await fetch(`${COMPOSIO_BASE}/connectedAccounts`, {
+    // Initiate connection via Composio v3 REST API
+    const initiateRes = await fetch(`${COMPOSIO_BASE}/connected_accounts`, {
       method: "POST",
       headers: composioHeaders(composioApiKey),
       body: JSON.stringify({
-        authConfigId: realIntegrationId,
-        entityId,
-        redirectUri: callbackUrl,
-        ...(Object.keys(inputFields).length > 0 ? { data: inputFields } : {}),
+        auth_config: { id: realIntegrationId },
+        connection: {
+          userId: entityId,
+          redirectUri: callbackUrl,
+          ...(Object.keys(inputFields).length > 0 ? { data: inputFields } : {}),
+        },
       }),
     });
 
@@ -110,6 +112,7 @@ export async function POST(request: Request) {
     }
 
     const result = (await initiateRes.json()) as {
+      redirect_url?: string;
       redirectUrl?: string;
       id?: string;
       connectedAccountId?: string;
@@ -117,7 +120,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(
       {
-        redirectUrl: result.redirectUrl,
+        redirectUrl: result.redirect_url ?? result.redirectUrl,
         connectedAccountId: result.id ?? result.connectedAccountId,
         appName,
       },
