@@ -1,96 +1,51 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { ApiRouteError, getOrgMemberContext } from "@/lib/server/org-member";
 
-let _sb: ReturnType<typeof createClient> | null = null;
-function supabase() {
-  if (!_sb) _sb = createClient(
-    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-    process.env.SUPABASE_SERVICE_ROLE_KEY || ""
-  );
-  return _sb;
-}
+export const runtime = "nodejs";
 
-// GET /api/logs - Get aggregated conversation logs with events
+// GET /api/logs - Conversation logs scoped to the authenticated org
 export async function GET(request: NextRequest) {
   try {
+    const { admin, member } = await getOrgMemberContext();
+
     const { searchParams } = new URL(request.url);
     const conversationId = searchParams.get("conversationId");
-    const eventType = searchParams.get("eventType");
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
-    const limit = parseInt(searchParams.get("limit") || "100");
+    const limit = Math.min(parseInt(searchParams.get("limit") || "100"), 200);
 
-    // First, try to get conversation events if table exists
-    let events: Array<{
-      id: string;
-      conversation_id: string;
-      event_type: string;
-      timestamp: string;
-      data: Record<string, unknown>;
-      latency_ms?: number;
-    }> = [];
+    // Fetch conversations (schema uses started_at not created_at, no status column)
+    let convQuery = admin
+      .from("conversations")
+      .select("id, agent_id, channel, started_at, ended_at, duration_seconds, metadata, agents(name)")
+      .eq("org_id", member.orgId)
+      .order("started_at", { ascending: false })
+      .limit(limit);
 
-    try {
-      let query = supabase().from("conversation_events")
-        .select("*")
-        .order("timestamp", { ascending: false })
-        .limit(limit);
+    if (conversationId) convQuery = convQuery.eq("id", conversationId);
+    if (startDate) convQuery = convQuery.gte("started_at", startDate);
+    if (endDate) convQuery = convQuery.lte("started_at", endDate);
 
-      if (conversationId) {
-        query = query.eq("conversation_id", conversationId);
-      }
-      if (eventType) {
-        query = query.eq("event_type", eventType);
-      }
-      if (startDate) {
-        query = query.gte("timestamp", startDate);
-      }
-      if (endDate) {
-        query = query.lte("timestamp", endDate);
-      }
+    const { data: rawConversations, error: convError } = await convQuery;
 
-      const { data, error } = await query;
-      if (!error && data) {
-        events = data;
-      }
-    } catch (e) {
-      // Table might not exist yet
+    if (convError) {
+      console.error("[Logs] conversations query error:", convError.message);
     }
 
-    // Also get conversations with their messages for a richer log view
-    let conversations: Array<{
-      id: string;
-      agent_id: string;
-      channel: string;
-      status: string;
-      created_at: string;
-      ended_at?: string;
-      metadata?: Record<string, unknown>;
-      agents?: { name: string };
-    }> = [];
+    // Normalize: map started_at → created_at and derive status from ended_at
+    const conversations = (rawConversations ?? []).map((c) => ({
+      id: c.id,
+      agent_id: c.agent_id,
+      channel: c.channel,
+      created_at: c.started_at,           // page expects created_at
+      ended_at: c.ended_at ?? undefined,
+      duration_seconds: c.duration_seconds,
+      status: c.ended_at ? "ended" : "active",
+      metadata: c.metadata,
+      agents: c.agents,
+    }));
 
-    try {
-      let convQuery = supabase().from("conversations")
-        .select("id, agent_id, channel, status, created_at, ended_at, metadata, agents(name)")
-        .order("created_at", { ascending: false })
-        .limit(50);
-
-      if (startDate) {
-        convQuery = convQuery.gte("created_at", startDate);
-      }
-      if (endDate) {
-        convQuery = convQuery.lte("created_at", endDate);
-      }
-
-      const { data, error } = await convQuery;
-      if (!error && data) {
-        conversations = data as unknown as typeof conversations;
-      }
-    } catch (e) {
-      // Table might not exist
-    }
-
-    // Get messages for recent conversations
+    // Fetch messages for the returned conversations
     const conversationIds = conversations.slice(0, 20).map((c) => c.id);
     let messages: Array<{
       id: string;
@@ -102,49 +57,37 @@ export async function GET(request: NextRequest) {
     }> = [];
 
     if (conversationIds.length > 0) {
-      try {
-        const { data, error } = await supabase().from("messages")
-          .select("id, conversation_id, role, content, created_at, metadata")
-          .in("conversation_id", conversationIds)
-          .order("created_at", { ascending: true });
+      const { data: msgData, error: msgError } = await admin
+        .from("messages")
+        .select("id, conversation_id, role, content, created_at, metadata")
+        .in("conversation_id", conversationIds)
+        .order("created_at", { ascending: true });
 
-        if (!error && data) {
-          messages = data;
-        }
-      } catch (e) {
-        // Table might not exist
+      if (msgError) {
+        console.error("[Logs] messages query error:", msgError.message);
       }
+      messages = msgData ?? [];
     }
 
-    // Aggregate stats
+    // conversation_events table may not exist — skip silently
+    const events: unknown[] = [];
+
     const stats = {
       totalConversations: conversations.length,
       totalEvents: events.length,
-      avgLatencyMs: events.length > 0
-        ? Math.round(
-            events
-              .filter((e) => e.latency_ms)
-              .reduce((sum, e) => sum + (e.latency_ms || 0), 0) /
-              events.filter((e) => e.latency_ms).length || 1
-          )
-        : 0,
-      eventsByType: events.reduce((acc, e) => {
-        acc[e.event_type] = (acc[e.event_type] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>),
+      avgLatencyMs: 0,
+      eventsByType: {} as Record<string, number>,
+      activeConversations: conversations.filter((c) => c.status === "active").length,
+      endedConversations: conversations.filter((c) => c.status === "ended").length,
     };
 
-    return NextResponse.json({
-      events,
-      conversations,
-      messages,
-      stats,
-    });
-  } catch (err) {
-    console.error("Error fetching logs:", err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to fetch logs" },
-      { status: 500 }
-    );
+    return NextResponse.json({ events, conversations, messages, stats });
+  } catch (error) {
+    if (error instanceof ApiRouteError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
+    const message = error instanceof Error ? error.message : "Failed to fetch logs";
+    console.error("[Logs] error:", message);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
