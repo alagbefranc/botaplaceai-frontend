@@ -20,20 +20,20 @@ steps:
       - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/botaplace-frontend:$COMMIT_SHA'
 
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
+    entrypoint: bash
     args:
-      - 'run'
-      - 'deploy'
-      - 'botaplace-frontend'
-      - '--image'
-      - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/botaplace-frontend:$COMMIT_SHA'
-      - '--region'
-      - 'us-central1'
-      - '--allow-unauthenticated'
-      - '--port'
-      - '3000'
-      - '--memory'
-      - '1Gi'
+      - '-c'
+      - |
+        gcloud run deploy botaplace-frontend \
+          --image us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/botaplace-frontend:$COMMIT_SHA \
+          --region us-central1 \
+          --port 3000 \
+          --memory 1Gi \
+          --cpu 1 \
+          --timeout 300 \
+          --min-instances 0 \
+          --max-instances 10 \
+          --update-env-vars "NODE_ENV=production,NEXT_PUBLIC_SUPABASE_URL=${_NEXT_PUBLIC_SUPABASE_URL},NEXT_PUBLIC_SUPABASE_ANON_KEY=${_NEXT_PUBLIC_SUPABASE_ANON_KEY},NEXT_PUBLIC_BACKEND_URL=${_NEXT_PUBLIC_BACKEND_URL},NEXT_PUBLIC_BACKEND_WS_URL=${_NEXT_PUBLIC_BACKEND_WS_URL},BACKEND_URL=${_NEXT_PUBLIC_BACKEND_URL}"
 
 substitutions:
   _NEXT_PUBLIC_SUPABASE_URL: 'https://ozmptzfpcmcnvppaywnq.supabase.co'
