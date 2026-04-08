@@ -242,7 +242,7 @@ export default function LogsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<[Dayjs, Dayjs]>([
-    dayjs().subtract(7, "day"),
+    dayjs().subtract(30, "day"),
     dayjs(),
   ]);
   const [eventTypeFilter, setEventTypeFilter] = useState<string | null>(null);
