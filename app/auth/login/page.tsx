@@ -76,7 +76,7 @@ function LoginPageInner() {
   const [form] = Form.useForm<LoginFormValues>();
   const [submitting, setSubmitting] = useState(false);
 
-  const redirect = searchParams.get("redirect") || "/";
+  const redirect = searchParams.get("redirect") || "/dashboard";
 
   const handleEmailLogin = useCallback(
     async (values: LoginFormValues) => {

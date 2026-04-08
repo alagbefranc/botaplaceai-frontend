@@ -76,7 +76,7 @@ export default function OnboardingPage() {
         document.cookie = "bo-onboarding-done=1; path=/; max-age=31536000; samesite=lax";
 
         message.success("Welcome to Botaplace! Your workspace is ready.");
-        router.push("/");
+        router.push("/dashboard");
       } catch (err) {
         message.error(err instanceof Error ? err.message : "Something went wrong");
       } finally {

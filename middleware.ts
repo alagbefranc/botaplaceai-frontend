@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_ROUTES = ["/", "/status"];
+const PUBLIC_ROUTES = ["/status"];
 const PUBLIC_PREFIXES = ["/landing", "/status"];
 const AUTH_ROUTES_PREFIX = "/auth";
 const ONBOARDING_ROUTE = "/onboarding";
@@ -17,6 +17,31 @@ export async function middleware(request: NextRequest) {
 
   // Skip public file extensions
   if (/\.(svg|png|jpg|jpeg|gif|ico|webp|css|js|woff2?)$/.test(pathname)) {
+    return NextResponse.next();
+  }
+
+  // Root path: show landing for visitors, redirect logged-in users to dashboard
+  if (pathname === "/") {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (supabaseUrl && supabaseAnonKey) {
+      let rootResponse = NextResponse.next({ request: { headers: request.headers } });
+      const sb = createServerClient(supabaseUrl, supabaseAnonKey, {
+        cookies: {
+          getAll() { return request.cookies.getAll(); },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              request.cookies.set(name, value);
+              rootResponse.cookies.set(name, value, options);
+            });
+          },
+        },
+      });
+      const { data: { user: rootUser } } = await sb.auth.getUser();
+      if (rootUser) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+    }
     return NextResponse.next();
   }
 

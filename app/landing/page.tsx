@@ -53,7 +53,7 @@ const metrics = [
 
 const infrastructureCards = [
   {
-    img: "https://cdn.prod.website-files.com/66cddff3a7bb08f0bc015747/69b3eb6ae5a44be22d7d5fe6_Global%20Voice.avif",
+    img: "/infra-voice-ai.png",
     title: "Gemini-Powered Voice AI",
     desc: "Real-time voice conversations using Google's Gemini Live API with sub-500ms latency. Natural, human-like interactions that understand context and nuance.",
   },
@@ -63,12 +63,12 @@ const infrastructureCards = [
     desc: "Train custom models on your conversation history using Vertex AI supervised fine-tuning. Your agents get smarter with every interaction.",
   },
   {
-    img: "https://cdn.prod.website-files.com/66cddff3a7bb08f0bc015747/69b3ec90345d55d03f82f47e_airtight%20data.avif",
+    img: "/infra-telephony.png",
     title: "Enterprise-Grade Telephony",
     desc: "Powered by Telnyx for crystal-clear voice quality, global coverage, and carrier-grade reliability. Buy phone numbers, port existing ones, or bring your own.",
   },
   {
-    img: "https://cdn.prod.website-files.com/66cddff3a7bb08f0bc015747/69b3ec90ab8d9d3713c72bf1_Dedicated%20instances.avif",
+    img: "/infra-analytics.png",
     title: "Complete Call Analytics",
     desc: "Every conversation is transcribed, analyzed, and summarized. Track sentiment, extract insights, and measure success rates across all channels.",
   },
