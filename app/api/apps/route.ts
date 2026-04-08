@@ -77,13 +77,9 @@ export async function GET() {
     // entityId = orgId — connections belong to the org
     const entityId = member.orgId;
 
-    // Fetch all available apps, auth_configs, and connected accounts in parallel
-    const [appsRes, authConfigsRes, accountsRes] = await Promise.all([
+    // Fetch apps and connected accounts, plus ALL auth configs (paginated)
+    const [appsRes, accountsRes] = await Promise.all([
       fetch(`${COMPOSIO_V2}/apps?limit=200`, {
-        headers: headers(composioApiKey),
-        cache: "no-store",
-      }),
-      fetch(`${COMPOSIO_BASE}/auth_configs?limit=100`, {
         headers: headers(composioApiKey),
         cache: "no-store",
       }),
@@ -93,12 +89,22 @@ export async function GET() {
       }),
     ]);
 
+    // Paginate through all auth configs — Composio v3 caps at 20/page regardless of limit
+    const allAuthConfigs: ComposioAuthConfig[] = [];
+    let cursor: string | null = null;
+    do {
+      const url = cursor
+        ? `${COMPOSIO_BASE}/auth_configs?cursor=${cursor}`
+        : `${COMPOSIO_BASE}/auth_configs`;
+      const res = await fetch(url, { headers: headers(composioApiKey), cache: "no-store" });
+      if (!res.ok) break;
+      const page = (await res.json()) as { items?: ComposioAuthConfig[]; next_cursor?: string | null };
+      allAuthConfigs.push(...(page.items ?? []));
+      cursor = page.next_cursor ?? null;
+    } while (cursor);
+
     const appsPayload = appsRes.ok
       ? ((await appsRes.json()) as { items?: ComposioApp[] })
-      : { items: [] };
-
-    const authConfigsPayload = authConfigsRes.ok
-      ? ((await authConfigsRes.json()) as { items?: ComposioAuthConfig[] })
       : { items: [] };
 
     const accountsPayload = accountsRes.ok
@@ -106,7 +112,6 @@ export async function GET() {
       : { items: [] };
 
     const allApps = appsPayload.items ?? [];
-    const allAuthConfigs = authConfigsPayload.items ?? [];
     const allAccounts = accountsPayload.items ?? [];
 
     // Build auth config lookup by toolkit slug

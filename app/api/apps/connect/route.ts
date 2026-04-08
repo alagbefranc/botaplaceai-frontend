@@ -1,13 +1,59 @@
 import { NextResponse } from "next/server";
 import { ApiRouteError, getOrgMemberContext } from "@/lib/server/org-member";
-import { Composio } from "composio-core";
 
 export const runtime = "nodejs";
+
+const COMPOSIO_BASE = "https://backend.composio.dev/api/v3";
 
 interface ConnectAppBody {
   integrationId?: string;
   appName?: string;
   inputFields?: Record<string, string>;
+}
+
+function composioHeaders(apiKey: string) {
+  return { "x-api-key": apiKey, "Content-Type": "application/json" } as const;
+}
+
+/**
+ * When an app has no pre-configured auth config, the apps list returns a fake
+ * integrationId of "app_<slug>". We need to create a real auth config first
+ * using Composio's managed auth (useComposioAuth: true), then use the returned
+ * ID to initiate the connection.
+ */
+async function ensureRealIntegrationId(
+  apiKey: string,
+  integrationId: string,
+  appName: string,
+): Promise<string> {
+  // Real integration IDs are UUIDs, not "app_*"
+  if (!integrationId.startsWith("app_")) {
+    return integrationId;
+  }
+
+  const slug = appName || integrationId.replace("app_", "");
+
+  // Create a managed auth config for this app
+  const res = await fetch(`${COMPOSIO_BASE}/auth_configs`, {
+    method: "POST",
+    headers: composioHeaders(apiKey),
+    body: JSON.stringify({
+      toolkitSlug: slug,
+      useComposioAuth: true,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Failed to create auth config for ${slug}: ${res.status} ${body}`);
+  }
+
+  const data = (await res.json()) as { id?: string };
+  if (!data.id) {
+    throw new Error(`Composio did not return an integration ID for ${slug}`);
+  }
+
+  return data.id;
 }
 
 export async function POST(request: Request) {
@@ -32,24 +78,47 @@ export async function POST(request: Request) {
       allowedRoles: ["admin", "editor"],
     });
 
-    // Use orgId as Composio entityId — connections belong to the org, not a single user
+    // Resolve fake "app_*" IDs to real Composio integration IDs
+    const realIntegrationId = await ensureRealIntegrationId(
+      composioApiKey,
+      integrationId,
+      appName,
+    );
+
     const entityId = member.orgId;
     const callbackUrl = `${new URL(request.url).origin}/apps`;
 
-    // Use Composio SDK to initiate connection - handles input fields properly
-    const composio = new Composio({ apiKey: composioApiKey });
-
-    const connectionRequest = await composio.connectedAccounts.initiate({
-      entityId,
-      integrationId,
-      redirectUri: callbackUrl,
-      ...(Object.keys(inputFields).length > 0 ? { connectionParams: inputFields } : {}),
+    // Initiate connection via Composio REST API directly (avoids SDK version issues)
+    const initiateRes = await fetch(`${COMPOSIO_BASE}/connectedAccounts`, {
+      method: "POST",
+      headers: composioHeaders(composioApiKey),
+      body: JSON.stringify({
+        authConfigId: realIntegrationId,
+        entityId,
+        redirectUri: callbackUrl,
+        ...(Object.keys(inputFields).length > 0 ? { data: inputFields } : {}),
+      }),
     });
+
+    if (!initiateRes.ok) {
+      const errBody = await initiateRes.text();
+      console.error("[Composio Connect] initiate failed:", initiateRes.status, errBody);
+      return NextResponse.json(
+        { error: `Composio returned ${initiateRes.status}: ${errBody}` },
+        { status: initiateRes.status },
+      );
+    }
+
+    const result = (await initiateRes.json()) as {
+      redirectUrl?: string;
+      id?: string;
+      connectedAccountId?: string;
+    };
 
     return NextResponse.json(
       {
-        redirectUrl: connectionRequest.redirectUrl,
-        connectedAccountId: connectionRequest.connectedAccountId,
+        redirectUrl: result.redirectUrl,
+        connectedAccountId: result.id ?? result.connectedAccountId,
         appName,
       },
       { status: 201 },
