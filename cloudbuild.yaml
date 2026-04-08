@@ -37,7 +37,7 @@ steps:
 
 substitutions:
   _NEXT_PUBLIC_SUPABASE_URL: 'https://ozmptzfpcmcnvppaywnq.supabase.co'
-  _NEXT_PUBLIC_SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96bXB0emZwY21jbnZwcGF5d25xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4Mjc3MDQsImV4cCI6MjA5MDQwMzcwNH0.CpMn_nMsNR6bfFq3btCU4Nd3dkEd07y-_VQbFY2OYKE'
+  _NEXT_PUBLIC_SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96bXB0emZwY21jbnZwcGF5d25xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4Mjc3MDQsImV4cCI6MjA5MDQwMzcwNH0.XX_WsUmcCTKjFF6kXmTEDinQo0UJZbbs3XyAlcv11jo'
   _NEXT_PUBLIC_BACKEND_URL: 'https://botaplace-backend-598506627688.us-central1.run.app'
   _NEXT_PUBLIC_BACKEND_WS_URL: 'wss://botaplace-backend-598506627688.us-central1.run.app'
 
