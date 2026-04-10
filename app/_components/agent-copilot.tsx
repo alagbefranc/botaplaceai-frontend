@@ -215,9 +215,9 @@ export function AgentCopilot({
   
   const getWelcomeMessage = (ctx: PageContext, auth: boolean): string => {
     if (ctx.type === "home") {
-      return auth 
-        ? "Hi! I'm your AI workspace copilot. I can help you build a new agent, or answer questions about your existing ones. What would you like to do?"
-        : "Hi! I'm your AI workspace copilot. I can help you build an AI agent right now - no login required. You can create one agent as a guest. What kind of agent do you want to build?";
+      return auth
+        ? "Let's build your AI agent! First — what's your company name and what do you sell or do?"
+        : "Let's build your AI agent! First — what's your company name and what do you sell or do? (You can create one agent as a guest, no login required.)";
     }
     if (ctx.type === "agent-detail") {
       return `I can help you optimize this agent, troubleshoot issues, or explain any settings. What would you like to know?`;
@@ -543,7 +543,7 @@ export function AgentCopilot({
           Ask Question
         </Button>
         {isHomePage && (
-          <Button shape="round" size="small" onClick={() => handleSubmit("Build an AI agent")}>
+          <Button shape="round" size="small" onClick={() => handleSubmit("I want to build an AI agent for my business")}>
             Build Agent
           </Button>
         )}
