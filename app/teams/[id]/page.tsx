@@ -41,6 +41,7 @@ import {
   ThunderboltOutlined,
 } from "@ant-design/icons";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getAgentAvatarUrl } from "@/lib/utils/agent-avatar";
 import { RoutePageShell } from "@/app/_components/route-page-shell";
 import type {
   AgentTeam,
@@ -481,10 +482,10 @@ export default function TeamEditorPage() {
                         >
                           <Avatar
                             size={40}
+                            src={getAgentAvatarUrl(member.agentId, member.agent?.avatar_url)}
                             style={{
-                              backgroundColor: member.role === "entry" ? "#17DEBC" : "#1E293B",
+                              backgroundColor: "#e8e8e8",
                             }}
-                            icon={<RobotOutlined />}
                           />
                         </Badge>
                       }

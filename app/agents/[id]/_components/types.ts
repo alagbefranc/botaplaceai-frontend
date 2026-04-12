@@ -23,6 +23,7 @@ export interface EditableAgent {
   channels: ChannelKey[];
   status: "draft" | "active" | "paused";
   greetingMessage: string;
+  avatarUrl?: string | null;
   liveApi: LiveApiConfig;
   customFunctions: CustomFunction[];
   behavior: BehaviorConfig;

@@ -81,6 +81,7 @@ interface AgentApiRecord {
   channels: string[];
   status: "draft" | "active" | "paused";
   greeting_message: string | null;
+  avatar_url?: string | null;
   liveApi?: LiveApiConfig;
   customFunctions?: CustomFunction[];
   behavior?: BehaviorConfig;
@@ -148,6 +149,7 @@ function AgentDetailsPageInner() {
         channels: ((apiAgent.channels ?? ["web_chat"]) as ChannelKey[]).filter(Boolean),
         status: apiAgent.status,
         greetingMessage: apiAgent.greeting_message ?? defaultGreetingMessage,
+        avatarUrl: apiAgent.avatar_url ?? null,
         liveApi: {
           ...DEFAULT_LIVE_API_CONFIG,
           ...(apiAgent.liveApi ?? {}),

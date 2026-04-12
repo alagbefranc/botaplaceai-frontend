@@ -862,7 +862,7 @@ export async function GET(request: Request) {
     const id = url.searchParams.get("id")?.trim();
 
     const selectColumns =
-      "id, name, system_prompt, voice, channels, tools, status, greeting_message, settings, analysis_plan, created_at, updated_at";
+      "id, name, system_prompt, voice, channels, tools, status, greeting_message, settings, analysis_plan, avatar_url, created_at, updated_at";
 
     if (id) {
       const { data, error } = await admin

@@ -29,10 +29,11 @@ export async function GET(request: Request) {
       if (conversation.agent_id) {
         const { data: agentData } = await admin
           .from("agents")
-          .select("name")
+          .select("name, avatar_url")
           .eq("id", conversation.agent_id)
           .single();
         if (agentData?.name) agentName = agentData.name;
+        if (agentData?.avatar_url) (conversation as Record<string, unknown>).agentAvatarUrl = agentData.avatar_url;
       }
 
       const { data: messages, error: messagesError } = await admin
@@ -74,7 +75,7 @@ export async function GET(request: Request) {
 
     const [agentsRes, messagesRes] = await Promise.all([
       agentIds.length > 0
-        ? admin.from("agents").select("id, name").in("id", agentIds)
+        ? admin.from("agents").select("id, name, avatar_url").in("id", agentIds)
         : Promise.resolve({ data: [], error: null }),
       conversationRows.length > 0
         ? admin
@@ -95,7 +96,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const agentMap = new Map((agentsRes.data ?? []).map((agent) => [agent.id, agent.name]));
+    const agentMap = new Map((agentsRes.data ?? []).map((agent) => [agent.id, { name: agent.name, avatarUrl: agent.avatar_url }]));
 
     const messagesByConversation = new Map<
       string,
@@ -115,7 +116,9 @@ export async function GET(request: Request) {
       const rowMessages = messagesByConversation.get(row.id) ?? [];
       return {
         id: row.id,
-        agent: row.agent_id ? agentMap.get(row.agent_id) ?? "Unknown Agent" : "Unassigned",
+        agent: row.agent_id ? agentMap.get(row.agent_id)?.name ?? "Unknown Agent" : "Unassigned",
+        agentAvatarUrl: row.agent_id ? agentMap.get(row.agent_id)?.avatarUrl ?? null : null,
+        agentId: row.agent_id ?? null,
         channel: row.channel,
         user: row.external_user_id ?? "anonymous",
         durationSeconds: row.duration_seconds ?? (

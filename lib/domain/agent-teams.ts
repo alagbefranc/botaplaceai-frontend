@@ -50,6 +50,7 @@ export interface TeamMember {
     name: string;
     status: string;
     voice?: string;
+    avatar_url?: string | null;
   };
 }
 

@@ -34,7 +34,7 @@ export async function GET(request: Request, { params }: RouteParams) {
       .from("team_members")
       .select(`
         id, team_id, agent_id, role, specialization, position,
-        agent:agents(id, name, status, voice)
+        agent:agents(id, name, status, voice, avatar_url)
       `)
       .eq("team_id", teamId)
       .order("position", { ascending: true });
@@ -103,7 +103,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         .eq("team_id", teamId)
         .select(`
           id, team_id, agent_id, role, specialization, position,
-          agent:agents(id, name, status, voice)
+          agent:agents(id, name, status, voice, avatar_url)
         `)
         .single();
 
@@ -186,7 +186,7 @@ export async function POST(request: Request, { params }: RouteParams) {
       })
       .select(`
         id, team_id, agent_id, role, specialization, position,
-        agent:agents(id, name, status, voice)
+        agent:agents(id, name, status, voice, avatar_url)
       `)
       .single();
 

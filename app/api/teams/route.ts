@@ -44,7 +44,7 @@ export async function GET(request: Request) {
         .from("team_members")
         .select(`
           id, team_id, agent_id, role, specialization, position,
-          agent:agents(id, name, status, voice)
+          agent:agents(id, name, status, voice, avatar_url)
         `)
         .eq("team_id", id)
         .order("position", { ascending: true });

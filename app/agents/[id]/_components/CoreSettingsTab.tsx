@@ -36,6 +36,7 @@ import {
   type ChannelKey,
 } from "@/lib/domain/agent-builder";
 import type { TabProps } from "./types";
+import { getAgentAvatarUrl } from "@/lib/utils/agent-avatar";
 
 interface ComposioIntegration {
   integrationId: string;
@@ -68,6 +69,38 @@ interface PhoneNumberRecord {
 
 export function CoreSettingsTab({ agent, updateAgentField }: TabProps) {
   const { message } = AntdApp.useApp();
+
+  // ── Avatar generation ───────────────────────────────────────────────────
+  const [generatingAvatar, setGeneratingAvatar] = useState(false);
+
+  const handleGenerateAvatar = async () => {
+    setGeneratingAvatar(true);
+    try {
+      const res = await fetch(`/api/agents/${agent.id}/generate-avatar`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to generate avatar");
+      updateAgentField("avatarUrl", data.avatar_url);
+      message.success("AI avatar generated!");
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Avatar generation failed.");
+    } finally {
+      setGeneratingAvatar(false);
+    }
+  };
+
+  const handleResetAvatar = async () => {
+    try {
+      const res = await fetch(`/api/agents/${agent.id}/generate-avatar`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to reset avatar");
+      }
+      updateAgentField("avatarUrl", null);
+      message.success("Avatar reset to default.");
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : "Avatar reset failed.");
+    }
+  };
 
   // ── Composio integrations ─────────────────────────────────────────────────
   const [integrations, setIntegrations] = useState<ComposioIntegration[]>([]);
@@ -258,6 +291,65 @@ export function CoreSettingsTab({ agent, updateAgentField }: TabProps) {
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <Space direction="vertical" size={16} style={{ width: "100%" }}>
+      {/* Agent Avatar */}
+      <Card title="Agent Avatar" size="small">
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <div style={{ position: "relative" }}>
+            <Avatar
+              size={80}
+              src={getAgentAvatarUrl(agent.id, agent.avatarUrl)}
+              style={{
+                border: "2px solid #f0f0f0",
+                background: "#e8e8e8",
+              }}
+            />
+            {agent.avatarUrl && (
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: -2,
+                  right: -2,
+                  background: "#52c41a",
+                  borderRadius: "50%",
+                  width: 18,
+                  height: 18,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <CheckCircleOutlined style={{ color: "#fff", fontSize: 10 }} />
+              </div>
+            )}
+          </div>
+          <div>
+            <Typography.Text type="secondary" style={{ display: "block", marginBottom: 8, fontSize: 12 }}>
+              {agent.avatarUrl ? "Custom AI-generated avatar" : "Auto-generated avatar (DiceBear)"}
+            </Typography.Text>
+            <Space size={8}>
+              <Button
+                type={agent.avatarUrl ? "default" : "primary"}
+                size="small"
+                loading={generatingAvatar}
+                onClick={() => void handleGenerateAvatar()}
+                icon={<ThunderboltOutlined />}
+              >
+                {generatingAvatar ? "Generating..." : "Generate AI Avatar"}
+              </Button>
+              {agent.avatarUrl && (
+                <Button
+                  size="small"
+                  danger
+                  onClick={() => void handleResetAvatar()}
+                >
+                  Reset to Default
+                </Button>
+              )}
+            </Space>
+          </div>
+        </div>
+      </Card>
+
       <Card title="Basic Information">
         <Space direction="vertical" size={14} style={{ width: "100%" }}>
           <Row gutter={12}>

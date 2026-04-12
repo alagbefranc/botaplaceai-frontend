@@ -16,6 +16,7 @@ import {
 } from "@ant-design/icons";
 import {
   App as AntdApp,
+  Avatar,
   Button,
   Card,
   Col,
@@ -46,6 +47,7 @@ import { RoutePageShell } from "../_components/route-page-shell";
 import { InsightsTab } from "./_components/insights-tab";
 import { CostTab } from "./_components/cost-tab";
 import { CallAnalysisTab } from "./_components/call-analysis-tab";
+import { getAgentAvatarUrl } from "@/lib/utils/agent-avatar";
 
 dayjs.extend(relativeTime);
 dayjs.extend(duration);
@@ -55,6 +57,8 @@ dayjs.extend(duration);
 interface ConversationRecord {
   id: string;
   agent: string;
+  agentAvatarUrl?: string | null;
+  agentId?: string | null;
   channel: string;
   user: string;
   durationSeconds: number;
@@ -508,15 +512,22 @@ export default function ConversationsPage() {
         title: "Agent",
         dataIndex: "agent",
         key: "agent",
-        render: (name: string) => (
-          <div>
-            <Typography.Text strong style={{ fontSize: 13, display: "block" }}>
-              {name}
-            </Typography.Text>
-            <Typography.Text type="secondary" style={{ fontSize: 11 }}>
-              AI Agent
-            </Typography.Text>
-          </div>
+        render: (name: string, record: ConversationRecord) => (
+          <Space size={10}>
+            <Avatar
+              size={36}
+              src={getAgentAvatarUrl(record.agentId ?? record.id, record.agentAvatarUrl)}
+              style={{ background: "#e8e8e8", flexShrink: 0 }}
+            />
+            <div>
+              <Typography.Text strong style={{ fontSize: 13, display: "block" }}>
+                {name}
+              </Typography.Text>
+              <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+                AI Agent
+              </Typography.Text>
+            </div>
+          </Space>
         ),
       },
       {
