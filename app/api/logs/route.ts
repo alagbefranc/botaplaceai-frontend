@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     // Fetch conversations (schema uses started_at not created_at, no status column)
     let convQuery = admin
       .from("conversations")
-      .select("id, agent_id, channel, started_at, ended_at, duration_seconds, metadata, agents(name)")
+      .select("id, agent_id, channel, started_at, ended_at, duration_seconds, metadata, agents!conversations_agent_id_fkey(name)")
       .eq("org_id", member.orgId)
       .order("started_at", { ascending: false })
       .limit(limit);
@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
 
     if (convError) {
       console.error("[Logs] conversations query error:", convError.message);
+      return NextResponse.json({ error: `Failed to query conversations: ${convError.message}` }, { status: 500 });
     }
 
     // Normalize: map started_at → created_at and derive status from ended_at
