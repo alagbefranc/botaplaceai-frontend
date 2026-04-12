@@ -41,45 +41,38 @@ export async function POST(
       );
     }
 
-    // Generate image with Gemini
+    // Generate image with Imagen
     const ai = new GoogleGenAI({ apiKey });
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-preview-05-20",
-      contents: `${AVATAR_PROMPT} This avatar represents an AI agent named "${agent.name}".`,
+    const response = await ai.models.generateImages({
+      model: "imagen-3.0-generate-002",
+      prompt: `${AVATAR_PROMPT} This avatar represents an AI agent named "${agent.name}".`,
       config: {
-        responseModalities: ["IMAGE", "TEXT"],
+        numberOfImages: 1,
+        aspectRatio: "1:1",
+        includeRaiReason: true,
       },
     });
 
-    // Extract image data from response
-    let imageBase64: string | null = null;
-    let mimeType = "image/png";
+    const imageBytes =
+      response.generatedImages?.[0]?.image?.imageBytes ?? null;
 
-    for (const part of response.candidates?.[0]?.content?.parts ?? []) {
-      if (part.inlineData?.data) {
-        imageBase64 = part.inlineData.data;
-        mimeType = part.inlineData.mimeType || "image/png";
-        break;
-      }
-    }
-
-    if (!imageBase64) {
+    if (!imageBytes) {
+      const raiReason = response.generatedImages?.[0]?.raiFilteredReason;
       return NextResponse.json(
-        { error: "Failed to generate avatar image" },
+        { error: raiReason || "Failed to generate avatar image" },
         { status: 500 }
       );
     }
 
     // Upload to Supabase Storage
-    const fileBuffer = Buffer.from(imageBase64, "base64");
-    const ext = mimeType === "image/jpeg" ? "jpg" : "png";
-    const filePath = `${member.orgId}/${agentId}.${ext}`;
+    const fileBuffer = Buffer.from(imageBytes, "base64");
+    const filePath = `${member.orgId}/${agentId}.png`;
 
     const { error: uploadError } = await admin.storage
       .from("agent-avatars")
       .upload(filePath, fileBuffer, {
-        contentType: mimeType,
+        contentType: "image/png",
         upsert: true,
       });
 
