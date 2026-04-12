@@ -15,6 +15,7 @@ import {
 } from "@ant-design/icons";
 import {
   App as AntdApp,
+  Avatar,
   Badge,
   Button,
   Dropdown,
@@ -34,6 +35,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { RoutePageShell } from "../_components/route-page-shell";
 import { AgentTestDrawer } from "../_components/agent-test-drawer";
+import { getAgentAvatarUrl } from "@/lib/utils/agent-avatar";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,6 +46,7 @@ interface AgentRecord {
   channels: string[];
   status: "draft" | "active" | "paused";
   createdAt: string;
+  avatarUrl?: string | null;
 }
 
 interface AgentsResponse {
@@ -55,6 +58,7 @@ interface AgentsResponse {
     channels: string[];
     status: "draft" | "active" | "paused";
     created_at: string;
+    avatar_url?: string | null;
     provider?: { chatModel?: string };
   }>;
 }
@@ -128,6 +132,7 @@ export default function AgentsPage() {
           channels: agent.channels ?? [],
           status: agent.status,
           createdAt: agent.created_at,
+          avatarUrl: agent.avatar_url ?? null,
         })),
       );
     } catch (error) {
@@ -309,12 +314,16 @@ export default function AgentsPage() {
       dataIndex: "name",
       key: "name",
       render: (_value, record) => (
-        <Typography.Link
-          onClick={() => void router.push(`/agents/${record.id}`)}
-          style={{ fontWeight: 500, fontSize: 13 }}
-        >
-          {record.name}
-        </Typography.Link>
+        <Space size={10} style={{ cursor: "pointer" }} onClick={() => void router.push(`/agents/${record.id}`)}>
+          <Avatar
+            size={32}
+            src={getAgentAvatarUrl(record.id, record.avatarUrl)}
+            style={{ background: "#e8e8e8", flexShrink: 0 }}
+          />
+          <Typography.Link style={{ fontWeight: 500, fontSize: 13 }}>
+            {record.name}
+          </Typography.Link>
+        </Space>
       ),
     },
     {
