@@ -45,7 +45,7 @@ export async function POST(
     const ai = new GoogleGenAI({ apiKey });
 
     const response = await ai.models.generateImages({
-      model: "imagen-3.0-generate-002",
+      model: "imagen-4.0-generate-001",
       prompt: `${AVATAR_PROMPT} This avatar represents an AI agent named "${agent.name}".`,
       config: {
         numberOfImages: 1,
