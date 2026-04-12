@@ -11,7 +11,6 @@ import {
   PhoneFilled,
   BulbFilled,
   ExperimentFilled,
-  FileTextFilled,
 } from "@ant-design/icons";
 import { Avatar, Button, Drawer, Dropdown, Flex, Space, Tooltip, Typography } from "antd";
 import { usePathname, useRouter } from "next/navigation";
@@ -96,13 +95,6 @@ const rightRailLinks: Array<{
     antIconActive: <ExperimentFilled style={{ fontSize: 20, color: "#17DEBC" }} />,
   },
   {
-    key: "logs",
-    label: "Logs",
-    href: "/logs",
-    antIcon: <FileTextFilled style={{ fontSize: 20, color: "#1E293B" }} />,
-    antIconActive: <FileTextFilled style={{ fontSize: 20, color: "#17DEBC" }} />,
-  },
-    {
     key: "conversations",
     label: "Conversations",
     href: "/conversations",
