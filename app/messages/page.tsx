@@ -232,7 +232,7 @@ function MessagesPageContent() {
   };
 
   return (
-    <RoutePageShell title="Messages" hideBuilderPanel nativeContent>
+    <RoutePageShell title="Messages" nativeContent>
       <div className="inbox-layout">
         {/* ── Left sidebar: conversation list ── */}
         <aside className="inbox-sidebar">

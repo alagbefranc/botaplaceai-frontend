@@ -30,6 +30,15 @@ type PageContext =
   | { type: "phone-numbers"; description: "Voice line provisioning" }
   | { type: "live-calls"; description: "Live call monitoring" }
   | { type: "settings"; description: "Platform settings" }
+  | { type: "missions"; description: "Outbound mission campaigns" }
+  | { type: "mission-detail"; description: "Individual mission details"; missionId: string }
+  | { type: "contacts"; description: "Contact management" }
+  | { type: "teams"; description: "Agent team management" }
+  | { type: "team-detail"; description: "Individual team configuration"; teamId: string }
+  | { type: "messages"; description: "Inbox and messaging" }
+  | { type: "evals"; description: "Agent testing and evaluation" }
+  | { type: "insights"; description: "AI-powered insights" }
+  | { type: "widget"; description: "Chat widget configuration" }
   | { type: "unknown"; description: "Unknown page" };
 
 interface AgentCopilotProps {
@@ -138,6 +147,10 @@ function getPageContext(pathname: string, agentId?: string): PageContext {
   if (pathname.startsWith("/agents/") && agentId) {
     return { type: "agent-detail", description: "Individual agent configuration", agentId };
   }
+  if (pathname.startsWith("/agents/") && !agentId) {
+    const id = pathname.split("/")[2];
+    if (id) return { type: "agent-detail", description: "Individual agent configuration", agentId: id };
+  }
   if (pathname === "/knowledge-base") {
     return { type: "knowledge-base", description: "Knowledge base and documents" };
   }
@@ -158,6 +171,35 @@ function getPageContext(pathname: string, agentId?: string): PageContext {
   }
   if (pathname === "/settings") {
     return { type: "settings", description: "Platform settings" };
+  }
+  if (pathname === "/missions") {
+    return { type: "missions", description: "Outbound mission campaigns" };
+  }
+  if (pathname.startsWith("/missions/")) {
+    const id = pathname.split("/")[2];
+    if (id) return { type: "mission-detail", description: "Individual mission details", missionId: id };
+  }
+  if (pathname === "/contacts") {
+    return { type: "contacts", description: "Contact management" };
+  }
+  if (pathname === "/teams") {
+    return { type: "teams", description: "Agent team management" };
+  }
+  if (pathname.startsWith("/teams/")) {
+    const id = pathname.split("/")[2];
+    if (id) return { type: "team-detail", description: "Individual team configuration", teamId: id };
+  }
+  if (pathname === "/messages") {
+    return { type: "messages", description: "Inbox and messaging" };
+  }
+  if (pathname === "/evals") {
+    return { type: "evals", description: "Agent testing and evaluation" };
+  }
+  if (pathname === "/insights") {
+    return { type: "insights", description: "AI-powered insights" };
+  }
+  if (pathname === "/widget") {
+    return { type: "widget", description: "Chat widget configuration" };
   }
   return { type: "unknown", description: "Unknown page" };
 }
@@ -220,7 +262,7 @@ export function AgentCopilot({
         : "Let's build your AI agent! First — what's your company name and what do you sell or do? (You can create one agent as a guest, no login required.)";
     }
     if (ctx.type === "agent-detail") {
-      return `I can help you optimize this agent, troubleshoot issues, or explain any settings. What would you like to know?`;
+      return "I can see this agent's full config. I can help optimize settings, troubleshoot issues, or explain anything. What would you like to know?";
     }
     if (ctx.type === "knowledge-base") {
       return "I can help you organize documents, troubleshoot ingestion issues, or optimize your knowledge base for better answers. What do you need help with?";
@@ -231,7 +273,49 @@ export function AgentCopilot({
     if (ctx.type === "analytics") {
       return "I can help you understand your metrics, identify trends, or suggest optimizations. What would you like to explore?";
     }
-    return "Hi! I'm your AI workspace copilot. How can I help you today?";
+    if (ctx.type === "missions") {
+      return "This is where you manage outbound call campaigns. I can help you create missions, assign agents, add contacts, and launch them. I can also see your existing missions and suggest improvements. What do you need?";
+    }
+    if (ctx.type === "mission-detail") {
+      return "I can see this mission's config, contacts, and call results. I can help you understand the outcomes, troubleshoot failed calls, or optimize for your next campaign. What would you like to know?";
+    }
+    if (ctx.type === "contacts") {
+      return "This is your contact database. I can help you import contacts via CSV, organize them, or explain how contacts work with missions and conversations. What do you need?";
+    }
+    if (ctx.type === "teams") {
+      return "Agent Teams let you combine multiple agents to handle complex workflows. I can help you create teams, assign agents with roles, or explain how team routing works. What would you like to do?";
+    }
+    if (ctx.type === "team-detail") {
+      return "I can see this team's configuration and members. I can help you optimize the team setup, add or remove agents, or configure routing. What do you need?";
+    }
+    if (ctx.type === "messages") {
+      return "This is your messaging inbox. I can help you understand conversations, explain message statuses, or troubleshoot delivery issues. How can I help?";
+    }
+    if (ctx.type === "evals") {
+      return "Agent Testing lets you run automated evaluations against your agents. I can help you create test suites, understand results, or suggest improvements based on test outcomes. What would you like to do?";
+    }
+    if (ctx.type === "insights") {
+      return "AI Insights automatically extracts patterns from your conversations — sentiment trends, common topics, escalation reasons. I can help you interpret the data or set up insight extraction. What are you looking for?";
+    }
+    if (ctx.type === "phone-numbers") {
+      return "This is where you manage your phone numbers for voice AI. I can help you provision numbers, assign them to agents, configure voicemail, or troubleshoot call issues. What do you need?";
+    }
+    if (ctx.type === "widget") {
+      return "The chat widget lets you embed your AI agent on any website. I can help you configure the widget appearance, behavior, and generate the embed code. What would you like to do?";
+    }
+    if (ctx.type === "apps") {
+      return "Connected apps extend your agents with third-party integrations like CRMs, calendars, and more. I can help you set up integrations or troubleshoot existing ones. What do you need?";
+    }
+    if (ctx.type === "settings") {
+      return "I can help you configure platform settings — organization details, API keys, billing, and more. What would you like to adjust?";
+    }
+    if (ctx.type === "agents") {
+      return "This is your agent listing. I can help you understand your agents' status, compare configurations, or guide you through creating a new one. What do you need?";
+    }
+    if (ctx.type === "live-calls") {
+      return "Live Calls shows you active voice calls in real-time. I can help you understand call states, monitor quality, or troubleshoot ongoing calls. What would you like to know?";
+    }
+    return "Hi! I'm your AI workspace copilot. I can see your current page context and help you get things set up correctly. How can I help?";
   };
   
   const appendMessage = useCallback((role: "user" | "assistant", content: React.ReactNode, loading = false) => {
@@ -270,6 +354,8 @@ export function AgentCopilot({
             pageType: context.type,
             pageDescription: context.description,
             agentId: context.type === "agent-detail" ? context.agentId : undefined,
+            missionId: (context.type === "mission-detail" && "missionId" in context) ? context.missionId : undefined,
+            teamId: (context.type === "team-detail" && "teamId" in context) ? context.teamId : undefined,
             isAuthenticated,
           },
           agentConfig: isHomePage ? {

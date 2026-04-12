@@ -400,7 +400,7 @@ export default function ContactsPage() {
   const csvHeaders = (csvPreview[0] ?? []).map((h) => h.toLowerCase());
 
   return (
-    <RoutePageShell title="Contacts" hideBuilderPanel nativeContent>
+    <RoutePageShell title="Contacts" nativeContent>
     <div style={{ padding: "24px 32px", minHeight: "100vh", background: "#fafafa" }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>

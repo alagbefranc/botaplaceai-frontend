@@ -471,7 +471,7 @@ export default function MissionsPage() {
   const selectedContactsCount = useAllContacts ? contacts.length : (form.getFieldValue("contactIds") ?? []).length;
 
   return (
-    <RoutePageShell title="Missions" hideBuilderPanel nativeContent>
+    <RoutePageShell title="Missions" nativeContent>
     <div style={{ padding: "24px 32px", minHeight: "100vh", background: "#fafafa" }}>
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>

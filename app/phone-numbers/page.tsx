@@ -129,7 +129,7 @@ function PhoneNumbersContent() {
     <RoutePageShell
       title="Numbers"
       subtitle="Manage your phone numbers, porting, voicemail, and compliance"
-      hideBuilderPanel
+      
     >
       <Tabs
         activeKey={activeTab}
@@ -150,7 +150,7 @@ export default function PhoneNumbersPage() {
         <RoutePageShell
           title="Numbers"
           subtitle="Loading..."
-          hideBuilderPanel
+          
         >
           <div style={{ height: 400, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <Text type="secondary">Loading numbers...</Text>
