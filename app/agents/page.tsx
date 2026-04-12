@@ -293,175 +293,179 @@ export default function AgentsPage() {
 
   // ── Table columns ───────────────────────────────────────────────────────────
 
+  const statusConfig: Record<AgentRecord["status"], { color: "success" | "processing" | "default"; label: string }> = {
+    active: { color: "success", label: "Active" },
+    draft: { color: "default", label: "Draft" },
+    paused: { color: "processing", label: "Paused" },
+  };
+
   const columns: ColumnsType<AgentRecord> = [
     {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      width: 100,
-      render: (status: AgentRecord["status"]) => {
-        const map: Record<AgentRecord["status"], { color: "success" | "processing" | "default"; label: string }> = {
-          active: { color: "success", label: "Active" },
-          draft: { color: "default", label: "Draft" },
-          paused: { color: "processing", label: "Paused" },
-        };
-        const { color, label } = map[status] ?? { color: "default", label: status };
-        return <Badge status={color} text={<Typography.Text style={{ fontSize: 13 }}>{label}</Typography.Text>} />;
-      },
-    },
-    {
-      title: "Name",
+      title: "Agent",
       dataIndex: "name",
       key: "name",
-      render: (_value, record) => (
-        <Space size={10} style={{ cursor: "pointer" }} onClick={() => void router.push(`/agents/${record.id}`)}>
-          <Avatar
-            size={32}
-            src={getAgentAvatarUrl(record.id, record.avatarUrl)}
-            style={{ background: "#e8e8e8", flexShrink: 0 }}
-          />
-          <Typography.Link style={{ fontWeight: 500, fontSize: 13 }}>
-            {record.name}
-          </Typography.Link>
-        </Space>
-      ),
+      render: (_value, record) => {
+        const { color, label } = statusConfig[record.status] ?? { color: "default", label: record.status };
+        return (
+          <div
+            style={{ display: "flex", alignItems: "center", gap: 14, cursor: "pointer" }}
+            onClick={() => void router.push(`/agents/${record.id}`)}
+          >
+            <Badge dot status={color} offset={[-2, 34]}>
+              <Avatar
+                size={40}
+                src={getAgentAvatarUrl(record.id, record.avatarUrl)}
+                style={{ background: "#e8e8e8", flexShrink: 0 }}
+              />
+            </Badge>
+            <div style={{ minWidth: 0 }}>
+              <Typography.Link
+                style={{ fontWeight: 600, fontSize: 14, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+              >
+                {record.name}
+              </Typography.Link>
+              <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                {label} · {record.model}
+              </Typography.Text>
+            </div>
+          </div>
+        );
+      },
     },
     {
       title: "ID",
       dataIndex: "id",
       key: "id",
+      width: 180,
       render: (id: string) => (
-        <Space size={6} style={{ whiteSpace: "nowrap" }}>
-          <Typography.Text style={{ fontSize: 13, color: "#374151", fontFamily: "monospace" }}>
-            {truncateId(id, 22)}
+        <Tooltip title="Click to copy">
+          <Typography.Text
+            copyable={{ text: id, tooltips: false }}
+            style={{ fontSize: 12, color: "#6B7280", fontFamily: "monospace", cursor: "pointer" }}
+          >
+            {truncateId(id, 16)}
           </Typography.Text>
-          <Tooltip title="Copy ID">
-            <Button
-              type="text"
-              size="small"
-              icon={<CopyOutlined style={{ fontSize: 12, color: "#9CA3AF" }} />}
-              style={{ width: 20, height: 20, minWidth: 0, padding: 0 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                void navigator.clipboard.writeText(id);
-                message.success("ID copied");
-              }}
-            />
-          </Tooltip>
-        </Space>
+        </Tooltip>
       ),
     },
     {
-      title: "Model",
-      dataIndex: "model",
-      key: "model",
-      render: (model: string) => (
-        <Typography.Text style={{ fontSize: 13, color: "#374151" }}>{model}</Typography.Text>
-      ),
-    },
-    {
-      title: "Tags",
+      title: "Channels",
       dataIndex: "channels",
-      key: "tags",
-      render: () => (
-        <Typography.Text style={{ fontSize: 13, color: "#9CA3AF" }}>—</Typography.Text>
-      ),
+      key: "channels",
+      width: 180,
+      render: (channels: string[]) =>
+        channels.length > 0 ? (
+          <Space size={4} wrap>
+            {channels.map((ch) => {
+              const labels: Record<string, string> = {
+                web_chat: "Web Chat", web_voice: "Voice", phone: "Phone",
+                whatsapp: "WhatsApp", sms: "SMS", email: "Email", slack: "Slack",
+              };
+              return (
+                <Badge key={ch} color="#e6f4ff" count={
+                  <Typography.Text style={{ fontSize: 11, color: "#1677ff", padding: "1px 6px" }}>
+                    {labels[ch] ?? ch}
+                  </Typography.Text>
+                } />
+              );
+            })}
+          </Space>
+        ) : (
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>No channels</Typography.Text>
+        ),
     },
     {
-      title: "Created At",
+      title: "Created",
       dataIndex: "createdAt",
       key: "createdAt",
-      width: 180,
+      width: 150,
       render: (value: string) => (
-        <Typography.Text style={{ fontSize: 13, color: "#374151" }}>
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
           {formatDate(value)}
         </Typography.Text>
       ),
     },
     {
+      title: "",
       key: "actions",
-      width: 220,
+      width: 140,
       render: (_value, record) => (
-        <Space size={2} style={{ justifyContent: "flex-end", display: "flex" }}>
-          <Tooltip title={record.status === "active" ? "Pause" : "Deploy"} >
-            <Button
-              type="text" size="small"
-              icon={
-                record.status === "active"
-                  ? <RocketOutlined style={{ fontSize: 14, color: "#F59E0B" }} />
-                  : <RocketOutlined style={{ fontSize: 14, color: "#10B981" }} />
-              }
-              style={{ width: 30, height: 30 }}
-              onClick={() =>
-                record.status === "active"
-                  ? void pauseAgent(record)
-                  : void deployAgent(record)
-              }
-            />
-          </Tooltip>
+        <Space size={4} style={{ justifyContent: "flex-end", display: "flex" }}>
           <Tooltip title="Edit">
             <Button
               type="text" size="small"
               icon={<EditOutlined style={{ fontSize: 14, color: "#6B7280" }} />}
-              style={{ width: 30, height: 30 }}
+              style={{ width: 32, height: 32 }}
               onClick={() => void router.push(`/agents/${record.id}`)}
-            />
-          </Tooltip>
-          <Tooltip title="Assign channels">
-            <Button
-              type="text" size="small"
-              icon={<PlusOutlined style={{ fontSize: 14, color: "#6B7280" }} />}
-              style={{ width: 30, height: 30 }}
-              onClick={() => void router.push(`/agents/${record.id}?tab=core`)}
-            />
-          </Tooltip>
-          <Tooltip title="Assign to team">
-            <Button
-              type="text" size="small"
-              icon={<TeamOutlined style={{ fontSize: 14, color: "#6B7280" }} />}
-              style={{ width: 30, height: 30 }}
-              onClick={() => void openAssignModal(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Duplicate">
-            <Button
-              type="text" size="small"
-              icon={<CopyOutlined style={{ fontSize: 14, color: "#6B7280" }} />}
-              style={{ width: 30, height: 30 }}
-              onClick={() => void duplicateAgent(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Voice &amp; Phone settings">
-            <Button
-              type="text" size="small"
-              icon={<PhoneOutlined style={{ fontSize: 14, color: "#6B7280" }} />}
-              style={{ width: 30, height: 30 }}
-              onClick={() => void router.push(`/agents/${record.id}?tab=speech`)}
             />
           </Tooltip>
           <Tooltip title="Test call">
             <Button
               type="text" size="small"
               icon={<PhoneFilled style={{ fontSize: 14, color: "#6B7280" }} />}
-              style={{ width: 30, height: 30 }}
+              style={{ width: 32, height: 32 }}
               onClick={() => setTestAgent({ id: record.id, name: record.name })}
             />
           </Tooltip>
-          <Popconfirm
-            title="Delete this agent?"
-            description="This action cannot be undone."
-            okText="Delete"
-            okButtonProps={{ danger: true }}
-            onConfirm={() => void deleteAgent(record)}
+          <Dropdown
+            trigger={["click"]}
+            menu={{
+              items: [
+                {
+                  key: "deploy",
+                  icon: <RocketOutlined />,
+                  label: record.status === "active" ? "Pause agent" : "Deploy agent",
+                  onClick: () => record.status === "active" ? void pauseAgent(record) : void deployAgent(record),
+                },
+                {
+                  key: "channels",
+                  icon: <PlusOutlined />,
+                  label: "Assign channels",
+                  onClick: () => void router.push(`/agents/${record.id}?tab=core`),
+                },
+                {
+                  key: "team",
+                  icon: <TeamOutlined />,
+                  label: "Assign to team",
+                  onClick: () => void openAssignModal(record),
+                },
+                {
+                  key: "duplicate",
+                  icon: <CopyOutlined />,
+                  label: "Duplicate",
+                  onClick: () => void duplicateAgent(record),
+                },
+                {
+                  key: "phone",
+                  icon: <PhoneOutlined />,
+                  label: "Voice & Phone settings",
+                  onClick: () => void router.push(`/agents/${record.id}?tab=speech`),
+                },
+                { type: "divider" },
+                {
+                  key: "delete",
+                  icon: <DeleteOutlined />,
+                  label: "Delete",
+                  danger: true,
+                  onClick: () => {
+                    Modal.confirm({
+                      title: "Delete this agent?",
+                      content: "This action cannot be undone.",
+                      okText: "Delete",
+                      okButtonProps: { danger: true },
+                      onOk: () => void deleteAgent(record),
+                    });
+                  },
+                },
+              ],
+            }}
           >
-            <Tooltip title="Delete">
-              <Button
-                type="text" size="small"
-                icon={<DeleteOutlined style={{ fontSize: 14, color: "#EF4444" }} />}
-                style={{ width: 30, height: 30 }}
-              />
-            </Tooltip>
-          </Popconfirm>
+            <Button
+              type="text" size="small"
+              icon={<DownOutlined style={{ fontSize: 12, color: "#6B7280" }} />}
+              style={{ width: 32, height: 32 }}
+            />
+          </Dropdown>
         </Space>
       ),
     },
@@ -654,7 +658,7 @@ export default function AgentsPage() {
                     fontWeight: 500,
                     fontSize: 13,
                     borderBottom: "1px solid #E5E7EB",
-                    padding: "10px 16px",
+                    padding: "12px 16px",
                   }}
                 />
               ),
