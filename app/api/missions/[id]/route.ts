@@ -30,6 +30,42 @@ export async function GET(
 
     if (mcError) return NextResponse.json({ error: mcError.message }, { status: 500 });
 
+    // Safety net: if mission is "running" but all contacts are finished, auto-complete it
+    if (mission.status === "running" && missionContacts && missionContacts.length > 0) {
+      const stillActive = missionContacts.filter(
+        (c: { call_status: string }) => c.call_status === "pending" || c.call_status === "calling"
+      );
+
+      if (stillActive.length === 0) {
+        const completed = missionContacts.filter((c: { call_status: string }) => c.call_status === "completed").length;
+        const noAnswer = missionContacts.filter((c: { call_status: string }) => c.call_status === "no_answer").length;
+        const failed = missionContacts.filter((c: { call_status: string }) => c.call_status === "failed").length;
+        const total = missionContacts.length;
+
+        await admin
+          .from("missions")
+          .update({
+            status: "completed",
+            completed_at: new Date().toISOString(),
+            total_contacts: total,
+            completed_calls: completed + noAnswer + failed,
+            successful_calls: completed,
+            failed_calls: noAnswer + failed,
+            result_summary: `Mission completed. ${completed} answered, ${noAnswer} no answer, ${failed} failed out of ${total} contacts.`,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", id);
+
+        mission.status = "completed";
+        mission.completed_at = new Date().toISOString();
+        mission.completed_calls = completed + noAnswer + failed;
+        mission.successful_calls = completed;
+        mission.failed_calls = noAnswer + failed;
+        mission.total_contacts = total;
+        mission.result_summary = `Mission completed. ${completed} answered, ${noAnswer} no answer, ${failed} failed out of ${total} contacts.`;
+      }
+    }
+
     return NextResponse.json({
       mission: {
         ...mission,
