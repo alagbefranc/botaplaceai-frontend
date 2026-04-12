@@ -46,8 +46,8 @@ export async function GET(request: NextRequest) {
       agents: c.agents,
     }));
 
-    // Fetch messages for the returned conversations
-    const conversationIds = conversations.slice(0, 20).map((c) => c.id);
+    // Fetch messages for all returned conversations
+    const conversationIds = conversations.map((c) => c.id);
     let messages: Array<{
       id: string;
       conversation_id: string;
@@ -70,14 +70,50 @@ export async function GET(request: NextRequest) {
       messages = msgData ?? [];
     }
 
-    // conversation_events table may not exist — skip silently
-    const events: unknown[] = [];
+    // Fetch conversation events
+    let events: Array<{
+      id: string;
+      conversation_id: string;
+      event_type: string;
+      timestamp: string;
+      data: Record<string, unknown>;
+      latency_ms?: number;
+    }> = [];
+
+    if (conversationIds.length > 0) {
+      try {
+        const { data: evtData, error: evtError } = await admin
+          .from("conversation_events")
+          .select("id, conversation_id, event_type, timestamp, data, latency_ms")
+          .in("conversation_id", conversationIds)
+          .order("timestamp", { ascending: false });
+
+        if (evtError) {
+          console.error("[Logs] events query error:", evtError.message);
+        }
+        events = evtData ?? [];
+      } catch {
+        // table may not exist — skip silently
+      }
+    }
+
+    // Compute stats
+    const eventsByType: Record<string, number> = {};
+    let totalLatency = 0;
+    let latencyCount = 0;
+    for (const evt of events) {
+      eventsByType[evt.event_type] = (eventsByType[evt.event_type] || 0) + 1;
+      if (evt.latency_ms) {
+        totalLatency += evt.latency_ms;
+        latencyCount++;
+      }
+    }
 
     const stats = {
       totalConversations: conversations.length,
       totalEvents: events.length,
-      avgLatencyMs: 0,
-      eventsByType: {} as Record<string, number>,
+      avgLatencyMs: latencyCount > 0 ? Math.round(totalLatency / latencyCount) : 0,
+      eventsByType,
       activeConversations: conversations.filter((c) => c.status === "active").length,
       endedConversations: conversations.filter((c) => c.status === "ended").length,
     };
