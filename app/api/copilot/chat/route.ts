@@ -38,9 +38,9 @@ async function generateWithFallback(
   maxOutputTokens: number
 ): Promise<{ stream: AsyncGenerator<import("@google/genai").GenerateContentResponse, any, any>; usedModel: string }> {
   const modelsToTry = [
-    "gemini-3-flash-preview",
-    "gemini-3.1-pro-preview",
     "gemini-2.5-flash",
+    "gemini-2.5-pro",
+    "gemini-2.0-flash",
   ];
   let lastError: Error | null = null;
 
@@ -560,7 +560,7 @@ export async function POST(request: NextRequest) {
       geminiMessages,
       systemPrompt,
       0.7,
-      2048
+      8192
     );
 
     const encoder = new TextEncoder();
