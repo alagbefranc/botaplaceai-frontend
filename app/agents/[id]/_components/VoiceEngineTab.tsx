@@ -2,6 +2,7 @@
 
 import {
   InfoCircleOutlined,
+  SoundOutlined,
   SwapOutlined,
   ThunderboltOutlined,
 } from "@ant-design/icons";
