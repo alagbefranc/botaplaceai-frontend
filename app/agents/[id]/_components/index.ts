@@ -9,5 +9,6 @@ export { InsightsTab } from "./InsightsTab";
 export { KnowledgeTab } from "./KnowledgeTab";
 export { SecurityTab } from "./SecurityTab";
 export { EscalationTab } from "./EscalationTab";
+export { VoiceEngineTab } from "./VoiceEngineTab";
 export { TrainingTab } from "./TrainingTab";
 export type { EditableAgent, TabProps } from "./types";

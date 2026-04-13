@@ -79,6 +79,7 @@ interface AgentWriteBody {
   provider?: Partial<ProviderConfig>;
   customInsights?: Partial<CustomInsightsConfig>;
   guardrails?: Partial<GuardrailsConfig>;
+  voiceEngine?: Record<string, unknown>;
   analysisPlan?: Partial<AnalysisPlan>;
   memory?: Partial<MemoryConfig>;
   insightExtraction?: Partial<InsightExtractionConfig>;
@@ -775,6 +776,13 @@ function extractGuardrailsFromSettings(settings: unknown): GuardrailsConfig {
   return normalizeGuardrailsConfig(settings.guardrails);
 }
 
+function extractVoiceEngineFromSettings(settings: unknown): Record<string, unknown> {
+  if (!isRecord(settings)) return { engine: "gemini-live" };
+  const ve = settings.voiceEngine;
+  if (!isRecord(ve)) return { engine: "gemini-live" };
+  return ve as Record<string, unknown>;
+}
+
 function extractMemoryFromSettings(settings: unknown): MemoryConfig {
   if (!isRecord(settings)) return { ...DEFAULT_MEMORY_CONFIG };
   return normalizeMemoryConfig(settings.memory);
@@ -809,6 +817,7 @@ function mapAgentResponse(agent: Record<string, unknown>) {
     provider: extractProviderFromSettings(agent.settings),
     customInsights: extractCustomInsightsFromSettings(agent.settings),
     guardrails: extractGuardrailsFromSettings(agent.settings),
+    voiceEngine: extractVoiceEngineFromSettings(agent.settings),
     memory: extractMemoryFromSettings(agent.settings),
     insightExtraction: extractInsightExtractionFromSettings(agent.settings),
     analysisPlan: normalizeAnalysisPlan(agent.analysis_plan),
@@ -847,6 +856,7 @@ function normalizeAgentBody(body: AgentWriteBody) {
       provider,
       custom_insights: customInsights,
       guardrails,
+      voiceEngine: body.voiceEngine ?? { engine: "gemini-live" },
       memory,
       insightExtraction,
       // Also write escalation at top-level so backend can read it from settings.escalation
@@ -950,6 +960,7 @@ export async function POST(request: Request) {
         provider: body.provider ?? extractProviderFromSettings(existingRecord.settings),
         customInsights: body.customInsights ?? extractCustomInsightsFromSettings(existingRecord.settings),
         guardrails: body.guardrails ?? extractGuardrailsFromSettings(existingRecord.settings),
+        voiceEngine: body.voiceEngine ?? extractVoiceEngineFromSettings(existingRecord.settings),
         memory: body.memory ?? extractMemoryFromSettings(existingRecord.settings),
         insightExtraction: body.insightExtraction ?? extractInsightExtractionFromSettings(existingRecord.settings),
         analysisPlan: body.analysisPlan ?? normalizeAnalysisPlan(existingRecord.analysis_plan),

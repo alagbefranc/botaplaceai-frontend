@@ -266,16 +266,18 @@ export interface RenderTokenOptions {
   isGuest?: boolean;
   onOpenAuthModal?: () => void;
   onConnectApps?: () => void;
+  onVoiceContinue?: () => void;
+  onChannelContinue?: () => void;
 }
 
 export function renderTokenComponent(type: SpecialTokenType, options: RenderTokenOptions = {}) {
   switch (type) {
     case "voice_picker":
-      return <VoicePicker key="voice_picker" />;
+      return <VoicePicker key="voice_picker" onContinue={options.onVoiceContinue} />;
     case "tool_picker":
       return <ToolPicker key="tool_picker" onConnectApps={options.onConnectApps} />;
     case "channel_picker":
-      return <ChannelPicker key="channel_picker" />;
+      return <ChannelPicker key="channel_picker" onContinue={options.onChannelContinue} />;
     case "agent_summary":
       return (
         <AgentSummary

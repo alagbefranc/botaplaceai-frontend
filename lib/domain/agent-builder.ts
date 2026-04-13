@@ -1336,6 +1336,104 @@ export interface EvalRun {
 }
 
 // ============================================================================
+// VOICE ENGINE CONFIGURATION - MULTI-PROVIDER SUPPORT
+// ============================================================================
+
+export type VoiceEngineType = "gemini-live" | "openai-realtime" | "mix";
+export type MixSttProvider = "deepgram" | "cartesia" | "whisper";
+export type MixLlmProvider = "openai" | "anthropic" | "gemini";
+export type MixTtsProvider = "cartesia" | "elevenlabs" | "openai" | "playht";
+
+export interface VoiceEngineConfig {
+  engine: VoiceEngineType;
+  // OpenAI Realtime specific
+  openaiModel?: string;
+  openaiVoice?: string;
+  openaiInputAudioFormat?: "pcm16" | "g711_ulaw" | "g711_alaw";
+  openaiOutputAudioFormat?: "pcm16" | "g711_ulaw" | "g711_alaw";
+  openaiVadEnabled?: boolean;
+  openaiVadThreshold?: number;
+  openaiVadSilenceDurationMs?: number;
+  openaiTemperature?: number;
+  openaiTurnDetection?: "server_vad" | "semantic_vad";
+  // Mix mode specific
+  sttProvider?: MixSttProvider;
+  llmProvider?: MixLlmProvider;
+  llmModel?: string;
+  ttsProvider?: MixTtsProvider;
+  ttsVoiceId?: string;
+  ttsModel?: string;
+  ttsSampleRate?: number;
+}
+
+export const DEFAULT_VOICE_ENGINE_CONFIG: VoiceEngineConfig = {
+  engine: "gemini-live",
+};
+
+export const VOICE_ENGINE_OPTIONS: Array<{
+  key: VoiceEngineType;
+  label: string;
+  description: string;
+  icon: string;
+  providers: string[];
+}> = [
+  {
+    key: "gemini-live",
+    label: "Gemini Live",
+    description: "Google's native speech-to-speech — lowest latency, built-in VAD, tool calling",
+    icon: "https://api.iconify.design/logos:google-gemini.svg",
+    providers: ["Google"],
+  },
+  {
+    key: "openai-realtime",
+    label: "OpenAI Realtime",
+    description: "GPT-4o native voice — speech-to-speech, function calling, server VAD",
+    icon: "https://api.iconify.design/simple-icons:openai.svg",
+    providers: ["OpenAI"],
+  },
+  {
+    key: "mix",
+    label: "Mix Mode",
+    description: "Compose STT + LLM + TTS from different providers for maximum flexibility",
+    icon: "https://api.iconify.design/mdi:puzzle.svg",
+    providers: ["Deepgram", "OpenAI", "Anthropic", "Cartesia", "ElevenLabs"],
+  },
+];
+
+export const OPENAI_REALTIME_VOICE_OPTIONS = [
+  { key: "alloy", label: "Alloy", description: "Balanced, versatile" },
+  { key: "ash", label: "Ash", description: "Warm, engaging" },
+  { key: "ballad", label: "Ballad", description: "Melodic, expressive" },
+  { key: "coral", label: "Coral", description: "Clear, professional" },
+  { key: "echo", label: "Echo", description: "Deep, resonant" },
+  { key: "fable", label: "Fable", description: "Storytelling, warm" },
+  { key: "onyx", label: "Onyx", description: "Strong, authoritative" },
+  { key: "nova", label: "Nova", description: "Bright, friendly" },
+  { key: "sage", label: "Sage", description: "Wise, calm" },
+  { key: "shimmer", label: "Shimmer", description: "Light, airy" },
+  { key: "verse", label: "Verse", description: "Poetic, articulate" },
+];
+
+export const MIX_STT_OPTIONS: Array<{ key: MixSttProvider; label: string; description: string }> = [
+  { key: "deepgram", label: "Deepgram Nova-3", description: "Fast, accurate streaming STT" },
+  { key: "whisper", label: "OpenAI Whisper", description: "Multilingual, batch-based" },
+  { key: "cartesia", label: "Cartesia Ink", description: "Low-latency STT (batch)" },
+];
+
+export const MIX_LLM_OPTIONS: Array<{ key: MixLlmProvider; label: string; description: string }> = [
+  { key: "openai", label: "OpenAI GPT-4o", description: "Fast, capable reasoning" },
+  { key: "anthropic", label: "Anthropic Claude", description: "Nuanced, careful responses" },
+  { key: "gemini", label: "Google Gemini", description: "Multimodal, long context" },
+];
+
+export const MIX_TTS_OPTIONS: Array<{ key: MixTtsProvider; label: string; description: string }> = [
+  { key: "cartesia", label: "Cartesia Sonic", description: "Ultra-low latency streaming TTS" },
+  { key: "elevenlabs", label: "ElevenLabs", description: "Natural, expressive voices" },
+  { key: "openai", label: "OpenAI TTS", description: "Simple, reliable" },
+  { key: "playht", label: "PlayHT", description: "High-quality voice cloning" },
+];
+
+// ============================================================================
 // CONVERSATION EVENTS - DETAILED LOGGING
 // ============================================================================
 

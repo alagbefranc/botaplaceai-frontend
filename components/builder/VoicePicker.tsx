@@ -9,7 +9,11 @@ import { VOICE_OPTIONS } from "@/lib/domain/agent-builder";
 const voicePreviewPrompt =
   "Hello! I am your AI assistant. I can help customers quickly and naturally.";
 
-export function VoicePicker() {
+interface VoicePickerProps {
+  onContinue?: () => void;
+}
+
+export function VoicePicker({ onContinue }: VoicePickerProps) {
   const { draft, setVoice } = useAgentBuilderStore();
   const [showAll, setShowAll] = useState(false);
   const [playingVoice, setPlayingVoice] = useState<string | null>(null);
@@ -180,6 +184,17 @@ export function VoicePicker() {
       >
         {showAll ? "Show fewer voices" : "Show all 30 voices"}
       </Button>
+
+      {onContinue && (
+        <Button
+          type="primary"
+          onClick={onContinue}
+          disabled={!draft.voice}
+          style={{ marginTop: 12 }}
+        >
+          Continue
+        </Button>
+      )}
     </div>
   );
 }

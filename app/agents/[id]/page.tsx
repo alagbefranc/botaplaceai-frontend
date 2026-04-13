@@ -40,6 +40,7 @@ import {
   DEFAULT_CUSTOM_INSIGHTS_CONFIG,
   DEFAULT_GUARDRAILS_CONFIG,
   DEFAULT_ANALYSIS_PLAN,
+  DEFAULT_VOICE_ENGINE_CONFIG,
   type ChannelKey,
   type CustomFunction,
   type LiveApiConfig,
@@ -52,6 +53,7 @@ import {
   type InsightExtractionConfig,
   type CustomInsightsConfig,
   type GuardrailsConfig,
+  type VoiceEngineConfig,
   type AnalysisPlan,
 } from "@/lib/domain/agent-builder";
 import { RoutePageShell } from "@/app/_components/route-page-shell";
@@ -71,6 +73,7 @@ import {
   TrainingTab,
   type EditableAgent,
 } from "./_components";
+import { VoiceEngineTab } from "./_components/VoiceEngineTab";
 
 interface AgentApiRecord {
   id: string;
@@ -190,6 +193,10 @@ function AgentDetailsPageInner() {
         guardrails: {
           ...DEFAULT_GUARDRAILS_CONFIG,
           ...(apiAgent.guardrails ?? {}),
+        },
+        voiceEngine: {
+          ...DEFAULT_VOICE_ENGINE_CONFIG,
+          ...((apiAgent as any).voiceEngine ?? {}),
         },
         analysisPlan: {
           ...DEFAULT_ANALYSIS_PLAN,
@@ -321,6 +328,16 @@ function AgentDetailsPageInner() {
     });
   };
 
+  const updateVoiceEngine = (patch: Partial<VoiceEngineConfig>) => {
+    setAgent((previous) => {
+      if (!previous) return previous;
+      return {
+        ...previous,
+        voiceEngine: { ...previous.voiceEngine, ...patch },
+      };
+    });
+  };
+
   const updateAnalysisPlan = (patch: Partial<AnalysisPlan>) => {
     setAgent((previous) => {
       if (!previous) return previous;
@@ -363,6 +380,7 @@ function AgentDetailsPageInner() {
           insightExtraction: agent.insightExtraction,
           customInsights: agent.customInsights,
           guardrails: agent.guardrails,
+          voiceEngine: agent.voiceEngine,
           analysisPlan: agent.analysisPlan,
         }),
       });
@@ -395,6 +413,7 @@ function AgentDetailsPageInner() {
     updateInsightExtraction,
     updateCustomInsights,
     updateGuardrails,
+    updateVoiceEngine,
     updateAnalysisPlan,
   } : null;
 
@@ -448,6 +467,11 @@ function AgentDetailsPageInner() {
       key: "escalation",
       label: <span><CustomerServiceOutlined /> Escalation</span>,
       children: tabProps && <EscalationTab {...tabProps} />,
+    },
+    {
+      key: "voice-engine",
+      label: <span><SoundOutlined /> Voice Engine</span>,
+      children: tabProps && <VoiceEngineTab {...tabProps} />,
     },
     {
       key: "advanced",

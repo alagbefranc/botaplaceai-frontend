@@ -10,6 +10,7 @@ import type {
   InsightExtractionConfig,
   CustomInsightsConfig,
   GuardrailsConfig,
+  VoiceEngineConfig,
   ChannelKey,
   AnalysisPlan,
 } from "@/lib/domain/agent-builder";
@@ -35,6 +36,7 @@ export interface EditableAgent {
   insightExtraction: InsightExtractionConfig;
   customInsights?: CustomInsightsConfig;
   guardrails: GuardrailsConfig;
+  voiceEngine: VoiceEngineConfig;
   analysisPlan?: AnalysisPlan;
 }
 
@@ -51,5 +53,6 @@ export interface TabProps {
   updateInsightExtraction: (patch: Partial<InsightExtractionConfig>) => void;
   updateCustomInsights?: (patch: Partial<CustomInsightsConfig>) => void;
   updateGuardrails: (patch: Partial<GuardrailsConfig>) => void;
+  updateVoiceEngine: (patch: Partial<VoiceEngineConfig>) => void;
   updateAnalysisPlan?: (patch: Partial<AnalysisPlan>) => void;
 }

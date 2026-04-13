@@ -6,7 +6,7 @@ import {
   PhoneOutlined,
   WhatsAppOutlined,
 } from "@ant-design/icons";
-import { Col, Row, Switch, Tag, Typography } from "antd";
+import { Button, Col, Row, Switch, Tag, Typography } from "antd";
 import { useAgentBuilderStore } from "@/lib/stores/agent-builder-store";
 import type { ChannelKey } from "@/lib/domain/agent-builder";
 
@@ -23,7 +23,11 @@ const CHANNELS: Array<{
   { id: "whatsapp", name: "WhatsApp", icon: <WhatsAppOutlined />, color: "#22C55E", available: false },
 ];
 
-export function ChannelPicker() {
+interface ChannelPickerProps {
+  onContinue?: () => void;
+}
+
+export function ChannelPicker({ onContinue }: ChannelPickerProps) {
   const { draft, toggleChannel } = useAgentBuilderStore();
 
   return (
@@ -66,6 +70,17 @@ export function ChannelPicker() {
           );
         })}
       </Row>
+
+      {onContinue && (
+        <Button
+          type="primary"
+          onClick={onContinue}
+          disabled={draft.channels.length === 0}
+          style={{ marginTop: 12 }}
+        >
+          Continue
+        </Button>
+      )}
     </div>
   );
 }

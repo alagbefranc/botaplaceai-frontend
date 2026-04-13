@@ -224,6 +224,8 @@ export function HomeDashboard() {
   const [isTestStreaming, setIsTestStreaming] = useState(false);
 
   const stageRef = useRef<BuilderStage>(builderStage);
+  // Ref so streamAIResponse can call startBuilder without a circular useCallback dep
+  const startBuilderRef = useRef<((prompt: string) => void) | null>(null);
 
   useEffect(() => {
     stageRef.current = builderStage;
@@ -934,6 +936,8 @@ export function HomeDashboard() {
                 router.push("/auth/signup");
               },
               onConnectApps: () => void router.push("/apps"),
+              onVoiceContinue: () => startBuilderRef.current?.("I've selected my voice, continue to tools"),
+              onChannelContinue: () => startBuilderRef.current?.("I've selected my channels, continue to the next step"),
             }));
   
           setBuilderMessages((prev) =>
@@ -1140,6 +1144,9 @@ export function HomeDashboard() {
       streamAIResponse,
     ],
   );
+
+  // Keep ref in sync so streamAIResponse can call startBuilder without circular dep
+  startBuilderRef.current = startBuilder;
 
   const executePendingAction = useCallback(
     async (actionName: string) => {
