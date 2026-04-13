@@ -5,6 +5,7 @@ import type { ThemeConfig } from "antd";
 import type { PropsWithChildren } from "react";
 import { BotaLoader } from "@/app/_components/bota-loader";
 import { DeployDrawer } from "@/components/deploy";
+import { NotificationProvider } from "@/app/_components/notification-provider";
 
 // Replace Ant Design's default spinner with the BOTA branded Lottie animation globally.
 Spin.setDefaultIndicator(<BotaLoader size={64} />);
@@ -62,8 +63,10 @@ export function Providers({ children }: PropsWithChildren) {
   return (
     <ConfigProvider theme={themeConfig}>
       <AntApp>
-        {children}
-        <DeployDrawer />
+        <NotificationProvider>
+          {children}
+          <DeployDrawer />
+        </NotificationProvider>
       </AntApp>
     </ConfigProvider>
   );

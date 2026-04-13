@@ -18,6 +18,7 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AntxPlaygroundChat, type AntxPlaygroundMessage } from "./antx-playground-chat";
 import { AgentCopilot } from "./agent-copilot";
+import { NotificationCenter } from "./notification-center";
 import Image from "next/image";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -564,6 +565,7 @@ export function RoutePageShell({
           </div>
 
           <div className="right-rail-bottom">
+            <NotificationCenter />
             <Tooltip title="Help" placement="left">
               <Button type="text" shape="circle" className="right-rail-link" icon={<img src="/assets/icons/bota/black/Help-SUpport-FAQ.svg" width={20} height={20} alt="" style={{ display: "block", objectFit: "contain" }} />} aria-label="Help" />
             </Tooltip>
