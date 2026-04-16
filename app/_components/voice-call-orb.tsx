@@ -363,6 +363,16 @@ export function VoiceCallOrb({ agentId, agentName }: VoiceCallOrbProps) {
                 }, _drainMs);
                 break;
               }
+              case "stop_hold_music": {
+                // Explicit signal from server to stop hold music
+                isHoldingRef.current = false;
+                if (holdMusicCleanupRef.current) {
+                  holdMusicCleanupRef.current();
+                  holdMusicCleanupRef.current = null;
+                }
+                setIsOnHold(false);
+                break;
+              }
               case "agent_changed": {
                 // New agent is ready — exit hold state
                 isHoldingRef.current = false;
