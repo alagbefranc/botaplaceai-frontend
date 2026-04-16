@@ -1433,6 +1433,49 @@ export const MIX_TTS_OPTIONS: Array<{ key: MixTtsProvider; label: string; descri
   { key: "playht", label: "PlayHT", description: "High-quality voice cloning" },
 ];
 
+// Per-provider TTS model options
+export const TTS_MODEL_OPTIONS: Record<MixTtsProvider, Array<{ value: string; label: string; description: string }>> = {
+  cartesia: [
+    { value: "sonic-2", label: "Sonic 2", description: "Latest, multilingual, ultra-low latency" },
+    { value: "sonic-2-english", label: "Sonic 2 English", description: "English-optimized, lowest latency" },
+    { value: "sonic", label: "Sonic (v1)", description: "Legacy model" },
+  ],
+  elevenlabs: [
+    { value: "eleven_turbo_v2_5", label: "Turbo v2.5", description: "Fastest, low latency" },
+    { value: "eleven_multilingual_v2", label: "Multilingual v2", description: "Best quality, 29 languages" },
+    { value: "eleven_flash_v2_5", label: "Flash v2.5", description: "Ultra-fast, streaming optimized" },
+  ],
+  openai: [
+    { value: "gpt-4o-mini-tts", label: "GPT-4o Mini TTS", description: "Newest, instruction-following TTS" },
+    { value: "tts-1", label: "TTS-1", description: "Standard quality, low latency" },
+    { value: "tts-1-hd", label: "TTS-1 HD", description: "Higher quality, slightly slower" },
+  ],
+  playht: [
+    { value: "Play3.0-mini", label: "Play 3.0 Mini", description: "Fast, conversational" },
+    { value: "PlayDialog", label: "PlayDialog", description: "Multi-turn dialog optimized" },
+    { value: "Play3.0", label: "Play 3.0", description: "Highest quality" },
+  ],
+};
+
+// Per-provider LLM model options
+export const LLM_MODEL_OPTIONS: Record<MixLlmProvider, Array<{ value: string; label: string }>> = {
+  openai: [
+    { value: "gpt-4o", label: "GPT-4o" },
+    { value: "gpt-4o-mini", label: "GPT-4o Mini" },
+    { value: "gpt-4.1", label: "GPT-4.1" },
+    { value: "gpt-4.1-mini", label: "GPT-4.1 Mini" },
+  ],
+  anthropic: [
+    { value: "claude-sonnet-4-20250514", label: "Claude Sonnet 4" },
+    { value: "claude-3-5-haiku-20241022", label: "Claude 3.5 Haiku" },
+  ],
+  gemini: [
+    { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+    { value: "gemini-2.5-pro", label: "Gemini 2.5 Pro" },
+    { value: "gemini-3-flash-preview", label: "Gemini 3 Flash (Preview)" },
+  ],
+};
+
 // ============================================================================
 // CONVERSATION EVENTS - DETAILED LOGGING
 // ============================================================================

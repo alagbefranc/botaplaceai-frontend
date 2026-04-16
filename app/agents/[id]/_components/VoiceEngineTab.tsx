@@ -16,18 +16,22 @@ import {
   Select,
   Slider,
   Space,
+  Spin,
   Tag,
   Tooltip,
   Typography,
 } from "antd";
-import type { VoiceEngineConfig } from "@/lib/domain/agent-builder";
+import type { VoiceEngineConfig, MixTtsProvider, MixLlmProvider } from "@/lib/domain/agent-builder";
 import {
   VOICE_ENGINE_OPTIONS,
   OPENAI_REALTIME_VOICE_OPTIONS,
   MIX_STT_OPTIONS,
   MIX_LLM_OPTIONS,
   MIX_TTS_OPTIONS,
+  TTS_MODEL_OPTIONS,
+  LLM_MODEL_OPTIONS,
 } from "@/lib/domain/agent-builder";
+import { useProviderVoices } from "@/lib/hooks/useProviderVoices";
 import type { TabProps } from "./types";
 
 function FieldLabel({ label, help }: { label: string; help: string }) {
@@ -44,6 +48,17 @@ function FieldLabel({ label, help }: { label: string; help: string }) {
 export function VoiceEngineTab({ agent, updateVoiceEngine }: TabProps) {
   const ve = agent.voiceEngine;
   const engine = ve.engine;
+
+  // Live voice fetching for TTS provider
+  const ttsProvider = (ve.ttsProvider || "cartesia") as MixTtsProvider;
+  const { voices: ttsVoices, loading: ttsVoicesLoading } = useProviderVoices(
+    engine === "mix" ? ttsProvider : undefined
+  );
+
+  // LLM + TTS model options based on selected providers
+  const llmProvider = (ve.llmProvider || "openai") as MixLlmProvider;
+  const llmModels = LLM_MODEL_OPTIONS[llmProvider] || [];
+  const ttsModels = TTS_MODEL_OPTIONS[ttsProvider] || [];
 
   return (
     <Space direction="vertical" size={16} style={{ width: "100%" }}>
@@ -327,12 +342,15 @@ export function VoiceEngineTab({ agent, updateVoiceEngine }: TabProps) {
                   label="Model"
                   help="Specific model name to use."
                 />
-                <Input
-                  value={ve.llmModel || "gpt-4o"}
-                  onChange={(e) =>
-                    updateVoiceEngine({ llmModel: e.target.value })
-                  }
-                  placeholder="gpt-4o, claude-sonnet-4-20250514, gemini-2.5-flash"
+                <Select
+                  showSearch
+                  value={ve.llmModel || llmModels[0]?.value || "gpt-4o"}
+                  onChange={(v) => updateVoiceEngine({ llmModel: v })}
+                  style={{ width: "100%" }}
+                  options={llmModels.map((m) => ({
+                    value: m.value,
+                    label: m.label,
+                  }))}
                 />
               </Col>
             </Row>
@@ -359,28 +377,40 @@ export function VoiceEngineTab({ agent, updateVoiceEngine }: TabProps) {
               </Col>
               <Col span={8}>
                 <FieldLabel
-                  label="Voice ID"
-                  help="Provider-specific voice ID. Leave empty for default."
+                  label="Voice"
+                  help="Select a voice from the provider's library."
                 />
-                <Input
-                  value={ve.ttsVoiceId || ""}
-                  onChange={(e) =>
-                    updateVoiceEngine({ ttsVoiceId: e.target.value })
+                <Select
+                  showSearch
+                  value={ve.ttsVoiceId || undefined}
+                  onChange={(v) => updateVoiceEngine({ ttsVoiceId: v })}
+                  style={{ width: "100%" }}
+                  placeholder={ttsVoicesLoading ? "Loading voices..." : "Select a voice"}
+                  loading={ttsVoicesLoading}
+                  filterOption={(input, option) =>
+                    (option?.label as string ?? "").toLowerCase().includes(input.toLowerCase())
                   }
-                  placeholder="Voice ID (provider-specific)"
+                  notFoundContent={ttsVoicesLoading ? <Spin size="small" /> : "No voices found"}
+                  options={ttsVoices.map((v) => ({
+                    value: v.id,
+                    label: `${v.name}${v.gender ? ` (${v.gender})` : ""}`,
+                  }))}
+                  allowClear
                 />
               </Col>
               <Col span={8}>
                 <FieldLabel
                   label="TTS Model"
-                  help="TTS model variant, e.g. sonic-2, eleven_turbo_v2_5, tts-1."
+                  help="TTS model variant for the selected provider."
                 />
-                <Input
-                  value={ve.ttsModel || ""}
-                  onChange={(e) =>
-                    updateVoiceEngine({ ttsModel: e.target.value })
-                  }
-                  placeholder="sonic-2"
+                <Select
+                  value={ve.ttsModel || ttsModels[0]?.value}
+                  onChange={(v) => updateVoiceEngine({ ttsModel: v })}
+                  style={{ width: "100%" }}
+                  options={ttsModels.map((m) => ({
+                    value: m.value,
+                    label: `${m.label} — ${m.description}`,
+                  }))}
                 />
               </Col>
             </Row>
