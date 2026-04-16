@@ -1436,9 +1436,10 @@ export const MIX_TTS_OPTIONS: Array<{ key: MixTtsProvider; label: string; descri
 // Per-provider TTS model options
 export const TTS_MODEL_OPTIONS: Record<MixTtsProvider, Array<{ value: string; label: string; description: string }>> = {
   cartesia: [
-    { value: "sonic-2", label: "Sonic 2", description: "Latest, multilingual, ultra-low latency" },
-    { value: "sonic-2-english", label: "Sonic 2 English", description: "English-optimized, lowest latency" },
-    { value: "sonic", label: "Sonic (v1)", description: "Legacy model" },
+    { value: "sonic-3", label: "Sonic 3", description: "Latest — 42 languages, emotion/speed/volume controls" },
+    { value: "sonic-3-latest", label: "Sonic 3 Latest (Beta)", description: "Bleeding-edge beta, hot-swapped" },
+    { value: "sonic-3-2026-01-12", label: "Sonic 3 (2026-01-12)", description: "Latest stable snapshot" },
+    { value: "sonic-2", label: "Sonic 2", description: "Legacy — being discontinued June 2026" },
   ],
   elevenlabs: [
     { value: "eleven_turbo_v2_5", label: "Turbo v2.5", description: "Fastest, low latency" },
